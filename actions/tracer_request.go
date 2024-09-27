@@ -13,9 +13,14 @@ func TracerRequest(data interface{}) {
 	irisCtx, ok := data.(iris.Context)
 	if ok {
 		currentTime := time.Now().UTC()
+		requestID := uuid.NewString()
+
+		if xRequestID := irisCtx.GetHeader("X-Request-Id"); xRequestID != "" {
+			requestID = xRequestID
+		}
 
 		apiRequest := models.APIRequest{
-			RequestID: uuid.NewString(),
+			RequestID: requestID,
 			Timestamp: currentTime,
 			Method:    irisCtx.Method(),
 			URL:       irisCtx.Request().RequestURI,

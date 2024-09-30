@@ -20,12 +20,13 @@ func TracerRequest(data interface{}) {
 		}
 
 		apiRequest := models.APIRequest{
-			RequestID: requestID,
-			Timestamp: currentTime,
-			Method:    irisCtx.Method(),
-			URL:       irisCtx.Request().RequestURI,
-			ClientIP:  irisCtx.RemoteAddr(),
-			UserAgent: irisCtx.GetHeader("User-Agent"),
+			RequestID:    requestID,
+			LastUpdateAt: currentTime,
+			Method:       irisCtx.Method(),
+			URL:          irisCtx.Request().RequestURI,
+			ClientIP:     irisCtx.RemoteAddr(),
+			UserAgent:    irisCtx.GetHeader("User-Agent"),
+			Headers:      irisCtx.Request().Header,
 		}
 
 		if body, _ := irisCtx.GetBody(); body != nil {

@@ -10,9 +10,9 @@ import (
 )
 
 func TracerRequest(data interface{}) {
+	currentTime := time.Now().UTC()
 	irisCtx, ok := data.(iris.Context)
 	if ok {
-		currentTime := time.Now().UTC()
 		requestID := uuid.NewString()
 
 		if xRequestID := irisCtx.GetHeader("X-Request-Id"); xRequestID != "" {
@@ -33,9 +33,10 @@ func TracerRequest(data interface{}) {
 		}
 
 		sangeEvent := sange.EventData{
-			EventType: "api-requests",
-			Data:      apiRequest,
+			EventType:   "api-requests",
+			PublishDate: &currentTime,
+			Data:        apiRequest,
 		}
-		sangeEvent.PublishDefault()
+		sangeEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 	}
 }

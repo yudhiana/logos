@@ -1,7 +1,6 @@
 package actions
 
 import (
-	"log"
 	"time"
 
 	"github.com/mataharibiz/sange"
@@ -20,6 +19,6 @@ func StateAction(data interface{}) {
 		PublishDate: &currentTime,
 		Data:        payload,
 	}
-	log.Println("sangeEvent: ", sangeEvent)
-	sangeEvent.PublishDefault()
+
+	sangeEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 }

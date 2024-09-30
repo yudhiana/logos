@@ -3,6 +3,7 @@ package models
 import "time"
 
 type TransactionState struct {
+	RequestID     string `json:"request_id"`
 	TransactionID uint64 `json:"transaction_id"`
 
 	EntityID   uint64 `json:"entity_id"`
@@ -10,6 +11,7 @@ type TransactionState struct {
 	EntityType string `json:"entity_type"`
 
 	State        string    `json:"state"`
+	Status       string    `json:"status"`
 	LastUpdateAt time.Time `json:"last_update_at"`
 
 	CreatedByID uint64 `json:"created_by_id"`

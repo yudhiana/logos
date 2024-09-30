@@ -1,23 +1,20 @@
-package actions
+package transactions
 
 import (
 	"time"
 
 	"github.com/mataharibiz/sange"
+	"github.com/yudhiana99/ward/transactions/models"
 )
 
 func StateAction(data interface{}) {
 	currentTime := time.Now().UTC()
-	payload := map[string]interface{}{
-		"time":  currentTime,
-		"state": "initial",
-		"data":  data,
-	}
+	stateData := models.TransactionState{}
 
 	sangeEvent := sange.EventData{
 		EventType:   "state-actions",
 		PublishDate: &currentTime,
-		Data:        payload,
+		Data:        stateData,
 	}
 
 	sangeEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))

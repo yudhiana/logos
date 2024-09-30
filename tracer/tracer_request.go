@@ -1,20 +1,24 @@
-package actions
+package tracer
 
 import (
+	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/kataras/iris/v12"
 	"github.com/mataharibiz/sange"
-	"github.com/yudhiana99/ward/actions/models"
+	"github.com/yudhiana99/ward"
+	"github.com/yudhiana99/ward/tracer/models"
 )
 
 func TracerIncomingRequest(data interface{}) {
-	currentTime := time.Now().UTC()
-	irisCtx, ok := data.(iris.Context)
-	if ok {
-		requestID := uuid.NewString()
+	defer ward.Recover()
 
+	currentTime := time.Now().UTC()
+	requestID := GenerateRequestID()
+
+	ctx := data.(context.Context)
+	irisCtx, ok := ctx.Value(IrisContextKey).(iris.Context)
+	if ok {
 		if xRequestID := irisCtx.GetHeader("X-Request-Id"); xRequestID != "" {
 			requestID = xRequestID
 		}

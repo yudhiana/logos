@@ -9,7 +9,7 @@ import (
 	"github.com/yudhiana99/ward/actions/models"
 )
 
-func TracerRequest(data interface{}) {
+func TracerIncomingRequest(data interface{}) {
 	currentTime := time.Now().UTC()
 	irisCtx, ok := data.(iris.Context)
 	if ok {
@@ -26,6 +26,7 @@ func TracerRequest(data interface{}) {
 			URL:          irisCtx.Request().RequestURI,
 			ClientIP:     irisCtx.RemoteAddr(),
 			UserAgent:    irisCtx.GetHeader("User-Agent"),
+			AppOrigin:    irisCtx.GetHeader("Dmp-Origin"),
 			Headers:      irisCtx.Request().Header,
 		}
 

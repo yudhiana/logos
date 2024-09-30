@@ -73,11 +73,12 @@ func TracerOutgoingRequest(data interface{}) {
 			Headers:      irisCtx.Request().Header,
 		}
 
-		recorder := irisCtx.Recorder()
-
-		body := recorder.Body()
-		if body != nil {
-			apiRequest.ResponseBody = string(body)
+		if f, fok := irisCtx.IsRecording(); fok {
+			body := f.Body()
+			if body != nil {
+				apiRequest.ResponseBody = string(body)
+			}
+			irisCtx.JSON(apiRequest.ResponseBody)
 		}
 
 		sangeEvent := sange.EventData{

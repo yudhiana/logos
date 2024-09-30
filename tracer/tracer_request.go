@@ -81,7 +81,7 @@ func TracerOutgoingRequest(data interface{}) {
 		}
 
 		sangeEvent := sange.EventData{
-			EventType:   "api-requests",
+			EventType:   "api-responses",
 			PublishDate: &currentTime,
 			Data:        apiRequest,
 		}

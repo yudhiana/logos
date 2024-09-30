@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/google/uuid v1.6.0
-	github.com/mataharibiz/sange v0.0.0-20240926093849-f84cbcf3ae4a
+	github.com/mataharibiz/sange v0.0.0-20240729083835-6408a5000498
 )
 
 require (

@@ -36,7 +36,7 @@ func TracerIncomingRequest(data interface{}) {
 		}
 
 		if body, _ := irisCtx.GetBody(); body != nil {
-			apiRequest.RequestBody = body
+			apiRequest.RequestBody = string(body)
 		}
 
 		sangeEvent := sange.EventData{
@@ -78,7 +78,8 @@ func TracerOutgoingRequest(data interface{}) {
 			if body != nil {
 				apiRequest.ResponseBody = string(body)
 			}
-			irisCtx.JSON(apiRequest.ResponseBody)
+			f.FlushResponse()
+			f.ResetBody()
 		}
 
 		sangeEvent := sange.EventData{

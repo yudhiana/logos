@@ -49,6 +49,42 @@ func TracerIncomingRequest(data interface{}) {
 			Data:        apiRequest,
 		}
 		event.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
+
+		irisCtx.Next()
+
+		// waiting to callback handlers
+
+		apiResponse := models.APIResponse{
+			RequestID:    requestID,
+			Status:       irisCtx.GetStatusCode(),
+			LastUpdateAt: currentTime,
+			Method:       irisCtx.Method(),
+			Type:         "response",
+			URL:          irisCtx.Request().RequestURI,
+			ClientIP:     irisCtx.RemoteAddr(),
+			UserAgent:    irisCtx.GetHeader("User-Agent"),
+			AppOrigin:    irisCtx.GetHeader("Dmp-Origin"),
+			Headers:      irisCtx.Request().Header,
+		}
+
+		if f, fok := irisCtx.IsRecording(); fok {
+			body := f.Body()
+			var response map[string]interface{}
+			if e := json.Unmarshal(body, &response); e != nil {
+				apiResponse.ResponseBody = string(body)
+			}
+			apiResponse.ResponseBody = response
+			f.FlushResponse()
+			f.ResetBody()
+		}
+
+		eventResponse := rmq.EventData{
+			EventType:   "api-responses",
+			PublishDate: &currentTime,
+			Data:        apiResponse,
+		}
+		eventResponse.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
+
 	}
 }
 

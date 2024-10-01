@@ -39,6 +39,7 @@ func (data *EventData) Publish(exchangeName string) {
 		conn, err := amqp.Dial(connURL)
 		if err != nil {
 			log.Println("Failed to connect to Rabbit MQ : ", err)
+			return
 		}
 		defer conn.Close()
 
@@ -46,6 +47,7 @@ func (data *EventData) Publish(exchangeName string) {
 		ch, err := conn.Channel()
 		if err != nil {
 			log.Println("Failed to create Rabbit MQ channel : ", err)
+			return
 		}
 		defer ch.Close()
 
@@ -61,6 +63,7 @@ func (data *EventData) Publish(exchangeName string) {
 		)
 		if err != nil {
 			log.Println("Failed to declare an exchange : ", err)
+			return
 		}
 
 		// publish event
@@ -77,6 +80,7 @@ func (data *EventData) Publish(exchangeName string) {
 
 		if err != nil {
 			log.Println("Failed to publish a message : ", err)
+			return
 		}
 
 	}()

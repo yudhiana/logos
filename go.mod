@@ -1,4 +1,4 @@
-module github.com/yudhiana99/ward
+module github.com/mataharibiz/ward
 
 go 1.20
 

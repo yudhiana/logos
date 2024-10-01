@@ -6,7 +6,7 @@ import (
 
 	"github.com/kataras/iris/v12"
 	"github.com/mataharibiz/sange"
-	"github.com/yudhiana99/ward/tracer/models"
+	"github.com/mataharibiz/ward/tracer/models"
 )
 
 func AddSpans(ctx context.Context, data map[string]interface{}) {

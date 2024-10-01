@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/kataras/iris/v12"
-	"github.com/yudhiana99/ward/observer"
-	"github.com/yudhiana99/ward/tracer"
+	"github.com/mataharibiz/ward/observer"
+	"github.com/mataharibiz/ward/tracer"
 )
 
 func TraceIncomingRequest(ctx iris.Context) {

@@ -9,9 +9,9 @@ import (
 
 	"github.com/kataras/iris/v12"
 	"github.com/mataharibiz/sange"
-	"github.com/yudhiana99/ward/observer"
-	"github.com/yudhiana99/ward/rmq"
-	"github.com/yudhiana99/ward/tracer/models"
+	"github.com/mataharibiz/ward/observer"
+	"github.com/mataharibiz/ward/rmq"
+	"github.com/mataharibiz/ward/tracer/models"
 )
 
 func TracerIncomingRequest(data interface{}) {

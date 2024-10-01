@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/mataharibiz/sange"
-	"github.com/yudhiana99/ward/transactions/models"
+	"github.com/mataharibiz/ward/transactions/models"
 )
 
 func StateAction(data interface{}) {

@@ -13,18 +13,12 @@ import (
 
 func TracerIncomingRequest(data interface{}) {
 	defer ward.Recover()
-
 	currentTime := time.Now().UTC()
-	requestID := GenerateRequestID()
 
 	ctx := data.(context.Context)
 	irisCtx, ok := ctx.Value(IrisContextKey).(iris.Context)
+	requestID := irisCtx.GetHeader("X-Request-Id")
 	if ok {
-		if xRequestID := irisCtx.GetHeader("X-Request-Id"); xRequestID != "" {
-			requestID = xRequestID
-			irisCtx.Request().Header.Set("X-Request-Id", requestID)
-		}
-
 		apiRequest := models.APIRequest{
 			RequestID:    requestID,
 			LastUpdateAt: currentTime,
@@ -49,20 +43,21 @@ func TracerIncomingRequest(data interface{}) {
 	}
 }
 
+func AuthenticateRequestId(ctx iris.Context) {
+	requestID := GenerateRequestID()
+	if xRequestID := ctx.GetHeader("X-Request-Id"); xRequestID == "" {
+		ctx.Request().Header.Set("X-Request-Id", requestID)
+	}
+}
+
 func TracerOutgoingRequest(data interface{}) {
 	defer ward.Recover()
-
 	currentTime := time.Now().UTC()
-	requestID := GenerateRequestID()
 
 	ctx := data.(context.Context)
 	irisCtx, ok := ctx.Value(IrisContextKey).(iris.Context)
+	requestID := irisCtx.GetHeader("X-Request-Id")
 	if ok {
-		if xRequestID := irisCtx.GetHeader("X-Request-Id"); xRequestID != "" {
-			requestID = xRequestID
-			irisCtx.Request().Header.Set("X-Request-Id", requestID)
-		}
-
 		apiRequest := models.APIResponse{
 			RequestID:    requestID,
 			LastUpdateAt: currentTime,

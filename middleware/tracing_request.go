@@ -9,6 +9,7 @@ import (
 )
 
 func TraceIncomingRequest(ctx iris.Context) {
+	tracer.AuthenticateRequestId(ctx)
 	go func(irisCtx iris.Context) {
 		observable := observer.NewObservable()
 		goCtx := context.WithValue(context.Background(), tracer.IrisContextKey, irisCtx)

@@ -14,7 +14,7 @@ import (
 	"github.com/mataharibiz/ward/tracer/models"
 )
 
-func TracerIncomingRequest(data interface{}) {
+func TracingRequest(data interface{}) {
 	defer observer.Recover()
 	currentTime := time.Now().UTC()
 
@@ -22,11 +22,10 @@ func TracerIncomingRequest(data interface{}) {
 	irisCtx, ok := ctx.Value(IrisContextKey).(iris.Context)
 	requestID := irisCtx.GetHeader("X-Request-Id")
 	if ok {
-		apiRequest := models.APIRequest{
+		apiRequest := &models.APIRequest{
 			RequestID:    requestID,
 			LastUpdateAt: currentTime,
 			Method:       irisCtx.Method(),
-			Type:         "request",
 			Status:       irisCtx.GetStatusCode(),
 			URL:          irisCtx.Request().RequestURI,
 			ClientIP:     irisCtx.RemoteAddr(),
@@ -43,49 +42,29 @@ func TracerIncomingRequest(data interface{}) {
 			apiRequest.RequestBody = request
 		}
 
-		event := rmq.EventData{
-			EventType:   "api-requests",
-			PublishDate: &currentTime,
-			Data:        apiRequest,
-		}
-		event.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
-
 		irisCtx.Record()
 		irisCtx.Next()
 
 		// waiting to callback handlers
-
-		apiResponse := models.APIResponse{
-			RequestID:    requestID,
-			Status:       irisCtx.GetStatusCode(),
-			LastUpdateAt: currentTime,
-			Method:       irisCtx.Method(),
-			Type:         "response",
-			URL:          irisCtx.Request().RequestURI,
-			ClientIP:     irisCtx.RemoteAddr(),
-			UserAgent:    irisCtx.GetHeader("User-Agent"),
-			AppOrigin:    irisCtx.GetHeader("Dmp-Origin"),
-			Headers:      irisCtx.Request().Header,
-		}
-
 		if f, fok := irisCtx.IsRecording(); fok {
+			apiRequest.Status = f.StatusCode()
 			body := f.Body()
 			var response map[string]interface{}
 			if e := json.Unmarshal(body, &response); e != nil {
-				apiResponse.ResponseBody = string(body)
+				apiRequest.ResponseBody = string(body)
 			}
-			apiResponse.ResponseBody = response
+			apiRequest.ResponseBody = response
+
+			apiRequest.Duration = int64(time.Since(currentTime).Milliseconds())
 			f.FlushResponse()
 			f.ResetBody()
 		}
 
 		eventResponse := rmq.EventData{
-			EventType:   "api-responses",
-			PublishDate: &currentTime,
-			Data:        apiResponse,
+			EventType: "api-request",
+			Data:      apiRequest,
 		}
 		eventResponse.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
-
 	}
 }
 
@@ -93,47 +72,6 @@ func AuthenticateRequestId(ctx iris.Context) {
 	requestID := GenerateRequestID()
 	if xRequestID := ctx.GetHeader("X-Request-Id"); xRequestID == "" {
 		ctx.Request().Header.Set("X-Request-Id", requestID)
-	}
-}
-
-func TracerOutgoingRequest(data interface{}) {
-	defer observer.Recover()
-	currentTime := time.Now().UTC()
-
-	ctx := data.(context.Context)
-	irisCtx, ok := ctx.Value(IrisContextKey).(iris.Context)
-	requestID := irisCtx.GetHeader("X-Request-Id")
-	if ok {
-		apiRequest := models.APIResponse{
-			RequestID:    requestID,
-			Status:       irisCtx.GetStatusCode(),
-			LastUpdateAt: currentTime,
-			Method:       irisCtx.Method(),
-			Type:         "response",
-			URL:          irisCtx.Request().RequestURI,
-			ClientIP:     irisCtx.RemoteAddr(),
-			UserAgent:    irisCtx.GetHeader("User-Agent"),
-			AppOrigin:    irisCtx.GetHeader("Dmp-Origin"),
-			Headers:      irisCtx.Request().Header,
-		}
-
-		if f, fok := irisCtx.IsRecording(); fok {
-			body := f.Body()
-			var response map[string]interface{}
-			if e := json.Unmarshal(body, &response); e != nil {
-				apiRequest.ResponseBody = string(body)
-			}
-			apiRequest.ResponseBody = response
-			f.FlushResponse()
-			f.ResetBody()
-		}
-
-		event := rmq.EventData{
-			EventType:   "api-responses",
-			PublishDate: &currentTime,
-			Data:        apiRequest,
-		}
-		event.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 	}
 }
 

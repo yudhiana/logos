@@ -23,15 +23,13 @@ func TracingRequest(data interface{}) {
 	requestID := irisCtx.GetHeader("X-Request-Id")
 	if ok {
 		apiRequest := &models.APIRequest{
-			RequestID:    requestID,
-			LastUpdateAt: currentTime,
-			Method:       irisCtx.Method(),
-			Status:       irisCtx.GetStatusCode(),
-			URL:          irisCtx.Request().RequestURI,
-			ClientIP:     irisCtx.RemoteAddr(),
-			UserAgent:    irisCtx.GetHeader("User-Agent"),
-			AppOrigin:    irisCtx.GetHeader("Dmp-Origin"),
-			Headers:      irisCtx.Request().Header,
+			RequestID: requestID,
+			Method:    irisCtx.Method(),
+			URL:       irisCtx.Request().RequestURI,
+			ClientIP:  irisCtx.RemoteAddr(),
+			UserAgent: irisCtx.GetHeader("User-Agent"),
+			AppOrigin: irisCtx.GetHeader("Dmp-Origin"),
+			Headers:   irisCtx.Request().Header,
 		}
 
 		if body := GetRequestBody(irisCtx); body != nil {
@@ -55,10 +53,14 @@ func TracingRequest(data interface{}) {
 			}
 			apiRequest.ResponseBody = response
 
-			apiRequest.Duration = int64(time.Since(currentTime).Milliseconds())
+			endTime := time.Now().UTC()
+			latency := endTime.Sub(currentTime)
+
+			apiRequest.DurationAsMilis = latency.Milliseconds()
 			f.FlushResponse()
 			f.ResetBody()
 		}
+		apiRequest.TimeStamp = time.Now().UTC()
 
 		eventResponse := rmq.EventData{
 			EventType: "api-request",

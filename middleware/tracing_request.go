@@ -12,7 +12,7 @@ func TraceIncomingRequest(ctx iris.Context) {
 	tracer.AuthenticateRequestId(ctx)
 
 	observable := observer.NewObservable()
-	goCtx := context.WithValue(context.Background(), tracer.IrisContextKey, ctx)
+	goCtx := context.WithValue(context.TODO(), tracer.IrisContextKey, ctx)
 	observable.Register(observer.NewObserver("tracer request", tracer.TracingRequest))
 	observable.TriggerEvent("tracer request", goCtx)
 

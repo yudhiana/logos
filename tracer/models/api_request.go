@@ -6,16 +6,16 @@ import (
 )
 
 type APIRequest struct {
-	RequestID       string      `json:"request_id"`
-	Status          int         `json:"status"`
-	Method          string      `json:"method"`
-	URL             string      `json:"url"`
-	ClientIP        string      `json:"client_ip"`
-	UserAgent       string      `json:"user_agent"`
-	AppOrigin       string      `json:"app_origin"`
-	Headers         http.Header `json:"headers"`
-	RequestBody     interface{} `json:"request_body"`
-	ResponseBody    interface{} `json:"response_body"`
-	DurationAsMilis int64       `json:"duration_as_milis"`
-	TimeStamp       time.Time   `json:"timestamp"`
+	RequestID       string      `json:"request_id,omitempty"`
+	Status          int         `json:"status,omitempty"`
+	Method          string      `json:"method,omitempty"`
+	URL             string      `json:"url,omitempty"`
+	ClientIP        string      `json:"client_ip,omitempty"`
+	UserAgent       string      `json:"user_agent,omitempty"`
+	AppOrigin       string      `json:"app_origin,omitempty"`
+	Headers         http.Header `json:"headers,omitempty"`
+	RequestBody     interface{} `json:"request_body,omitempty"`
+	ResponseBody    interface{} `json:"response_body,omitempty"`
+	DurationAsMilis int64       `json:"duration_as_milis,omitempty"`
+	TimeStamp       time.Time   `json:"timestamp,omitempty"`
 }

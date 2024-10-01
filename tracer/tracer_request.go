@@ -9,19 +9,18 @@ import (
 
 	"github.com/kataras/iris/v12"
 	"github.com/mataharibiz/sange"
-	"github.com/mataharibiz/ward/observer"
 	"github.com/mataharibiz/ward/rmq"
 	"github.com/mataharibiz/ward/tracer/models"
 )
 
 func TracingRequest(data interface{}) {
-	defer observer.Recover()
+	defer Recover(data.(context.Context))
 	currentTime := time.Now().UTC()
 
 	ctx := data.(context.Context)
 	irisCtx, ok := ctx.Value(IrisContextKey).(iris.Context)
-	requestID := irisCtx.GetHeader("X-Request-Id")
 	if ok {
+		requestID := irisCtx.GetHeader("X-Request-Id")
 		apiRequest := &models.APIRequest{
 			RequestID: requestID,
 			Method:    irisCtx.Method(),

@@ -36,7 +36,9 @@ func TracerIncomingRequest(data interface{}) {
 		}
 
 		if body := GetRequestBody(irisCtx); body != nil {
-			apiRequest.RequestBody = string(body)
+			var request map[string]interface{}
+			_ = json.Unmarshal(body, &request)
+			apiRequest.RequestBody = request
 		}
 
 		event := rmq.EventData{

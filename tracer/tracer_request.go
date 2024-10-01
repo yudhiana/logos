@@ -1,8 +1,10 @@
 package tracer
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -33,7 +35,7 @@ func TracerIncomingRequest(data interface{}) {
 			Headers:      irisCtx.Request().Header,
 		}
 
-		if body, _ := irisCtx.GetBody(); body != nil {
+		if body := GetRequestBody(irisCtx); body != nil {
 			apiRequest.RequestBody = string(body)
 		}
 
@@ -92,4 +94,17 @@ func TracerOutgoingRequest(data interface{}) {
 		}
 		event.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 	}
+}
+
+func GetRequestBody(ctx iris.Context) (bodyRequest []byte) {
+	body, err := io.ReadAll(ctx.Request().Body)
+	if err != nil {
+		return
+	}
+	defer ctx.Request().Body.Close()
+
+	bodyRequest = body
+	ctx.Request().Body = io.NopCloser(bytes.NewBuffer(bodyRequest))
+
+	return
 }

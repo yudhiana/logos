@@ -19,10 +19,11 @@ func TraceIncomingRequest(ctx iris.Context) {
 }
 
 func TraceOutgoingRequest(ctx iris.Context) {
-	observable := observer.NewObservable()
-	goCtx := context.WithValue(context.Background(), tracer.IrisContextKey, ctx)
-	observable.Register(observer.NewObserver("tracer request", tracer.TracerOutgoingRequest))
-	observable.TriggerEvent("tracer request", goCtx)
-
+	go func(irisCtx iris.Context) {
+		observable := observer.NewObservable()
+		goCtx := context.WithValue(context.Background(), tracer.IrisContextKey, irisCtx)
+		observable.Register(observer.NewObserver("tracer request", tracer.TracerOutgoingRequest))
+		observable.TriggerEvent("tracer request", goCtx)
+	}(ctx)
 	ctx.Next()
 }

@@ -2,6 +2,7 @@ package tracer
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -75,6 +76,7 @@ func TracerOutgoingRequest(data interface{}) {
 
 		if f, fok := irisCtx.IsRecording(); fok {
 			body := f.Body()
+			log.Println("[LOG]", string(body))
 			if body != nil {
 				apiRequest.ResponseBody = string(body)
 			}

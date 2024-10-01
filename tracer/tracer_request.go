@@ -60,7 +60,7 @@ func TracerOutgoingRequest(data interface{}) {
 	if ok {
 		if xRequestID := irisCtx.GetHeader("X-Request-Id"); xRequestID != "" {
 			requestID = xRequestID
-			irisCtx.Header("X-Request-Id", requestID)
+			irisCtx.Request().Header.Set("X-Request-Id", requestID)
 		}
 
 		apiRequest := models.APIResponse{

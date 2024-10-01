@@ -23,6 +23,7 @@ func TracerIncomingRequest(data interface{}) {
 			RequestID:    requestID,
 			LastUpdateAt: currentTime,
 			Method:       irisCtx.Method(),
+			Status:       irisCtx.GetStatusCode(),
 			URL:          irisCtx.Request().RequestURI,
 			ClientIP:     irisCtx.RemoteAddr(),
 			UserAgent:    irisCtx.GetHeader("User-Agent"),
@@ -60,6 +61,7 @@ func TracerOutgoingRequest(data interface{}) {
 	if ok {
 		apiRequest := models.APIResponse{
 			RequestID:    requestID,
+			Status:       irisCtx.GetStatusCode(),
 			LastUpdateAt: currentTime,
 			Method:       irisCtx.Method(),
 			URL:          irisCtx.Request().RequestURI,

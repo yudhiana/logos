@@ -7,6 +7,7 @@ import (
 
 type APIRequest struct {
 	RequestID    string      `json:"request_id"`
+	Status       int         `json:"status"`
 	Method       string      `json:"method"`
 	URL          string      `json:"url"`
 	ClientIP     string      `json:"client_ip"`

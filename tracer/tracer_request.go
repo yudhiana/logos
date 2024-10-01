@@ -2,7 +2,7 @@ package tracer
 
 import (
 	"context"
-	"log"
+	"encoding/json"
 	"time"
 
 	"github.com/kataras/iris/v12"
@@ -75,9 +75,10 @@ func TracerOutgoingRequest(data interface{}) {
 
 		if f, fok := irisCtx.IsRecording(); fok {
 			body := f.Body()
-			log.Println("[LOG]", string(body))
+			var response map[string]interface{}
+			_ = json.Unmarshal(body, &response)
 			if body != nil {
-				apiRequest.ResponseBody = string(body)
+				apiRequest.ResponseBody = response
 			}
 			f.FlushResponse()
 			f.ResetBody()

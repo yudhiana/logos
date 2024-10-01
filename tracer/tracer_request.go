@@ -50,6 +50,7 @@ func TracerIncomingRequest(data interface{}) {
 		}
 		event.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 
+		irisCtx.Record()
 		irisCtx.Next()
 
 		// waiting to callback handlers

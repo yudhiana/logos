@@ -4,7 +4,10 @@ go 1.20
 
 require (
 	github.com/google/uuid v1.6.0
+	github.com/kataras/pio v0.0.11
 	github.com/mataharibiz/sange v0.0.0-20240729083835-6408a5000498
+	github.com/rabbitmq/amqp091-go v1.10.0
+	github.com/sirupsen/logrus v1.9.3
 )
 
 require (
@@ -33,7 +36,6 @@ require (
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kataras/golog v0.1.8 // indirect
 	github.com/kataras/iris/v12 v12.1.8
-	github.com/kataras/pio v0.0.11
 	github.com/kataras/sitemap v0.0.6 // indirect
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/kr/pretty v0.3.0 // indirect

@@ -7,12 +7,13 @@ import (
 
 	"github.com/kataras/iris/v12"
 	"github.com/mataharibiz/sange"
-	"github.com/yudhiana99/ward"
+	"github.com/yudhiana99/ward/observer"
+	"github.com/yudhiana99/ward/rmq"
 	"github.com/yudhiana99/ward/tracer/models"
 )
 
 func TracerIncomingRequest(data interface{}) {
-	defer ward.Recover()
+	defer observer.Recover()
 	currentTime := time.Now().UTC()
 
 	ctx := data.(context.Context)
@@ -36,12 +37,12 @@ func TracerIncomingRequest(data interface{}) {
 			apiRequest.RequestBody = string(body)
 		}
 
-		sangeEvent := sange.EventData{
+		event := rmq.EventData{
 			EventType:   "api-requests",
 			PublishDate: &currentTime,
 			Data:        apiRequest,
 		}
-		sangeEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
+		event.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 	}
 }
 
@@ -53,7 +54,7 @@ func AuthenticateRequestId(ctx iris.Context) {
 }
 
 func TracerOutgoingRequest(data interface{}) {
-	defer ward.Recover()
+	defer observer.Recover()
 	currentTime := time.Now().UTC()
 
 	ctx := data.(context.Context)
@@ -84,11 +85,11 @@ func TracerOutgoingRequest(data interface{}) {
 			f.ResetBody()
 		}
 
-		sangeEvent := sange.EventData{
+		event := rmq.EventData{
 			EventType:   "api-responses",
 			PublishDate: &currentTime,
 			Data:        apiRequest,
 		}
-		sangeEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
+		event.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 	}
 }

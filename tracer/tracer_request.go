@@ -37,7 +37,9 @@ func TracerIncomingRequest(data interface{}) {
 
 		if body := GetRequestBody(irisCtx); body != nil {
 			var request map[string]interface{}
-			_ = json.Unmarshal(body, &request)
+			if e := json.Unmarshal(body, &request); e != nil {
+				apiRequest.RequestBody = string(body)
+			}
 			apiRequest.RequestBody = request
 		}
 
@@ -81,10 +83,10 @@ func TracerOutgoingRequest(data interface{}) {
 		if f, fok := irisCtx.IsRecording(); fok {
 			body := f.Body()
 			var response map[string]interface{}
-			_ = json.Unmarshal(body, &response)
-			if body != nil {
-				apiRequest.ResponseBody = response
+			if e := json.Unmarshal(body, &response); e != nil {
+				apiRequest.ResponseBody = string(body)
 			}
+			apiRequest.ResponseBody = response
 			f.FlushResponse()
 			f.ResetBody()
 		}

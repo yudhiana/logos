@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/Kong/go-pdk"
 	"github.com/Kong/go-pdk/server"
 )
@@ -33,51 +35,51 @@ func (conf Config) Access(kong *pdk.PDK) {
 		kong.ServiceRequest.SetHeader("X-Request-Id", xRequestID)
 	}
 
-	// responseStatus, errStatus := kong.Response.GetStatus()
-	// if errStatus != nil {
-	// 	kong.Log.Err("Failed to get response status", errStatus)
-	// 	return
-	// }
+	responseStatus, errStatus := kong.Response.GetStatus()
+	if errStatus != nil {
+		kong.Log.Err("Failed to get response status", errStatus)
+		return
+	}
 
-	// httpMethod, errMethod := kong.Request.GetMethod()
-	// if errMethod != nil {
-	// 	kong.Log.Err("Failed to get http method", errMethod)
-	// 	return
-	// }
+	httpMethod, errMethod := kong.Request.GetMethod()
+	if errMethod != nil {
+		kong.Log.Err("Failed to get http method", errMethod)
+		return
+	}
 
-	// appOrigin, errOrigin := kong.Request.GetHeader("Dmp-Origin")
-	// if errOrigin != nil {
-	// 	kong.Log.Err("Failed to get app origin", errOrigin)
-	// 	return
-	// }
+	appOrigin, errOrigin := kong.Request.GetHeader("Dmp-Origin")
+	if errOrigin != nil {
+		kong.Log.Err("Failed to get app origin", errOrigin)
+		return
+	}
 
-	// headers, errHeaders := kong.Request.GetHeaders(-1)
-	// if errHeaders != nil {
-	// 	kong.Log.Err("Failed to get headers", errHeaders)
-	// 	return
-	// }
+	headers, errHeaders := kong.Request.GetHeaders(-1)
+	if errHeaders != nil {
+		kong.Log.Err("Failed to get headers", errHeaders)
+		return
+	}
 
-	// body, errBody := kong.Request.GetRawBody()
-	// if errBody != nil {
-	// 	kong.Log.Err("Failed to get body", errBody)
-	// 	return
-	// }
+	body, errBody := kong.Request.GetRawBody()
+	if errBody != nil {
+		kong.Log.Err("Failed to get body", errBody)
+		return
+	}
 
 	// clientIP, _ := kong.Client.GetIp()
-	// path, _ := kong.Request.GetPath()
-	// userAgent, _ := kong.Request.GetHeader("User-Agent")
+	path, _ := kong.Request.GetPath()
+	userAgent, _ := kong.Request.GetHeader("User-Agent")
 
-	// metadata := &APIRequest{
-	// 	RequestID: xRequestID,
-	// 	Status:    responseStatus,
-	// 	Method:    httpMethod,
-	// 	URL:       path,
-	// 	ClientIP:  clientIP,
-	// 	UserAgent: userAgent,
-	// 	AppOrigin: appOrigin,
-	// 	Headers:   headers,
-	// 	TimeStamp: time.Now().UTC(),
-	// }
+	metadata := &APIRequest{
+		RequestID: xRequestID,
+		Status:    responseStatus,
+		Method:    httpMethod,
+		URL:       path,
+		// ClientIP:  clientIP,
+		UserAgent: userAgent,
+		AppOrigin: appOrigin,
+		Headers:   headers,
+		TimeStamp: time.Now().UTC(),
+	}
 
 	// var mapBody map[string]interface{}
 	// if errUnmarshal := json.Unmarshal(body, &mapBody); errUnmarshal != nil {
@@ -94,5 +96,5 @@ func (conf Config) Access(kong *pdk.PDK) {
 	// 	metadata.ResponseBody = mapBodyResponse
 	// }
 
-	// NewTracer().Captured(metadata)
+	NewTracer().Captured(metadata)
 }

@@ -3,7 +3,8 @@ package transactions
 import (
 	"time"
 
-	"github.com/mataharibiz/sange"
+	"github.com/mataharibiz/ward"
+	"github.com/mataharibiz/ward/rmq"
 	"github.com/mataharibiz/ward/transactions/models"
 )
 
@@ -11,11 +12,11 @@ func StateAction(data interface{}) {
 	currentTime := time.Now().UTC()
 	stateData := models.TransactionState{}
 
-	sangeEvent := sange.EventData{
+	event := rmq.EventData{
 		EventType:   "state-actions",
 		PublishDate: &currentTime,
 		Data:        stateData,
 	}
 
-	sangeEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
+	event.Publish(ward.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 }

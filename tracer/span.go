@@ -5,7 +5,8 @@ import (
 	"time"
 
 	"github.com/kataras/iris/v12"
-	"github.com/mataharibiz/sange"
+	"github.com/mataharibiz/ward"
+	"github.com/mataharibiz/ward/rmq"
 	"github.com/mataharibiz/ward/tracer/models"
 )
 
@@ -20,7 +21,7 @@ func AddSpans(ctx context.Context, data map[string]interface{}) {
 		}
 	}
 	var span models.Span
-	_ = sange.ParsePayloadData(data, &span)
+	_ = ward.ParsePayloadData(data, &span)
 
 	eventProcessing := models.APIProcessing{
 		RequestID:    requestID,
@@ -28,12 +29,12 @@ func AddSpans(ctx context.Context, data map[string]interface{}) {
 		Span:         span,
 	}
 
-	spanEvent := sange.EventData{
+	spanEvent := rmq.EventData{
 		EventType:   "spans",
 		PublishDate: &currentTime,
 		Data:        eventProcessing,
 	}
 
-	spanEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
+	spanEvent.Publish(ward.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 
 }

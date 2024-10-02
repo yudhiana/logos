@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/kataras/iris/v12"
-	"github.com/mataharibiz/sange"
+	"github.com/mataharibiz/ward"
 	"github.com/mataharibiz/ward/rmq"
 	"github.com/mataharibiz/ward/tracer/models"
 )
@@ -36,5 +36,5 @@ func Panic(data interface{}) {
 		EventType: "api-request",
 		Data:      apiPanicRequest,
 	}
-	panicEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))
+	panicEvent.Publish(ward.GetEnv("OBSERVER_EVENT", "dmp_observer"))
 }

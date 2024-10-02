@@ -1,6 +1,6 @@
 module github.com/mataharibiz/ward/kong-plugins/tracing-request
 
-go 1.23.1
+go 1.23
 
 require github.com/Kong/go-pdk v0.11.0
 

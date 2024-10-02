@@ -24,7 +24,7 @@ func New() interface{} {
 	return &Config{}
 }
 
-func (conf *Config) Access(kong *pdk.PDK) {
+func (conf Config) Access(kong *pdk.PDK) {
 	xRequestID, errGet := kong.Request.GetHeader("X-Request-Id")
 	if errGet != nil {
 		kong.Log.Err("Failed to get X-Request-Id", errGet)
@@ -34,15 +34,6 @@ func (conf *Config) Access(kong *pdk.PDK) {
 	if xRequestID == "" {
 		xRequestID = GenerateRequestID()
 		kong.ServiceRequest.SetHeader("X-Request-Id", xRequestID)
-	}
-
-}
-
-func (conf *Config) Log(kong *pdk.PDK) {
-	xRequestID, errGet := kong.Request.GetHeader("X-Request-Id")
-	if errGet != nil {
-		kong.Log.Err("Failed to get X-Request-Id", errGet)
-		return
 	}
 
 	responseStatus, errStatus := kong.Response.GetStatus()

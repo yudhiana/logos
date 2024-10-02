@@ -46,6 +46,7 @@ func TracingRequest(data interface{}) {
 		if f, fok := irisCtx.IsRecording(); fok {
 			apiRequest.Status = f.StatusCode()
 			body := f.Body()
+			panic("test panic")
 			var response map[string]interface{}
 			if e := json.Unmarshal(body, &response); e != nil {
 				apiRequest.ResponseBody = string(body)

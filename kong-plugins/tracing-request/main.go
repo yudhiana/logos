@@ -36,3 +36,8 @@ func (conf Config) Access(kong *pdk.PDK) {
 	log.Println("Authorization Header", "Authorization", auth)
 	kong.Log.Debug("KONG-DEBUG-WARD-PLUGIN: ", auth)
 }
+
+
+func (conf Config) Log(kong *pdk.PDK) {
+	kong.Log.Debug("KONG-DEBUG-WARD-PLUGIN-LOG: ", "Hello World!")
+}

@@ -59,11 +59,11 @@ func (conf Config) Access(kong *pdk.PDK) {
 		return
 	}
 
-	body, errBody := kong.Request.GetRawBody()
-	if errBody != nil {
-		kong.Log.Err("Failed to get body", errBody)
-		return
-	}
+	// body, errBody := kong.Request.GetRawBody()
+	// if errBody != nil {
+	// 	kong.Log.Err("Failed to get body", errBody)
+	// 	return
+	// }
 
 	// clientIP, _ := kong.Client.GetIp()
 	path, _ := kong.Request.GetPath()

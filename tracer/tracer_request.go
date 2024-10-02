@@ -15,14 +15,13 @@ import (
 
 func TracingRequest(data interface{}) {
 	defer Recover(data.(context.Context))
-	currentTime := time.Now().UTC()
 
 	ctx := data.(context.Context)
+	tracerCtx := ctx.Value(TracingRequestKey).(models.TracerCtx)
 	irisCtx, ok := ctx.Value(IrisContextKey).(iris.Context)
 	if ok {
-		requestID := irisCtx.GetHeader("X-Request-Id")
 		apiRequest := &models.APIRequest{
-			RequestID: requestID,
+			RequestID: tracerCtx.XRequestID,
 			Method:    irisCtx.Method(),
 			URL:       irisCtx.Request().RequestURI,
 			ClientIP:  irisCtx.RemoteAddr(),
@@ -53,8 +52,7 @@ func TracingRequest(data interface{}) {
 			apiRequest.ResponseBody = response
 
 			endTime := time.Now().UTC()
-			latency := endTime.Sub(currentTime)
-			panic("test panic with ctx")
+			latency := endTime.Sub(tracerCtx.Timestamp)
 			apiRequest.DurationAsMilis = latency.Milliseconds()
 			f.FlushResponse()
 			f.ResetBody()
@@ -69,11 +67,14 @@ func TracingRequest(data interface{}) {
 	}
 }
 
-func AuthenticateRequestId(ctx iris.Context) {
-	requestID := GenerateRequestID()
-	if xRequestID := ctx.GetHeader("X-Request-Id"); xRequestID == "" {
-		ctx.Request().Header.Set("X-Request-Id", requestID)
+func AuthenticateRequestId(ctx iris.Context) string {
+	xRequestID := ctx.GetHeader("X-Request-Id")
+	if xRequestID == "" {
+		xRequestID = GenerateRequestID()
+		ctx.Request().Header.Set("X-Request-Id", xRequestID)
 	}
+
+	return xRequestID
 }
 
 func GetRequestBody(ctx iris.Context) (bodyRequest []byte) {

@@ -21,5 +21,6 @@ type APIRequest struct {
 }
 
 type TracerCtx struct {
-	Timestamp time.Time
+	Timestamp  time.Time
+	XRequestID string
 }

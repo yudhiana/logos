@@ -17,7 +17,7 @@ func Panic(data interface{}) {
 	irisCtx := ctx.Value(IrisContextKey).(iris.Context)
 	tracerCtx := ctx.Value(TracingRequestKey).(models.TracerCtx)
 	apiPanicRequest := &models.APIRequest{
-		RequestID:       irisCtx.GetHeader("X-Request-Id"),
+		RequestID:       tracerCtx.XRequestID,
 		DurationAsMilis: time.Since(tracerCtx.Timestamp).Milliseconds(),
 		Status:          500,
 		Method:          irisCtx.Method(),

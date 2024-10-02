@@ -11,11 +11,11 @@ import (
 )
 
 func TraceIncomingRequest(ctx iris.Context) {
-	tracer.AuthenticateRequestId(ctx)
+	xRequestId := tracer.AuthenticateRequestId(ctx)
 
 	observable := observer.NewObservable()
 	goCtx := context.WithValue(context.TODO(), tracer.IrisContextKey, ctx)
-	tracerMetaData := models.TracerCtx{Timestamp: time.Now().UTC()}
+	tracerMetaData := models.TracerCtx{Timestamp: time.Now().UTC(), XRequestID: xRequestId}
 	tracerCtx := context.WithValue(goCtx, tracer.TracingRequestKey, tracerMetaData)
 	observable.Register(observer.NewObserver("tracer request", tracer.TracingRequest))
 	observable.TriggerEvent("tracer request", tracerCtx)

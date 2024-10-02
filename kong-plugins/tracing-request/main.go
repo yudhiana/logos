@@ -16,14 +16,14 @@ func main() {
 	server.StartServer(New, Version, Priority)
 }
 
-type Tracing struct {
+type Config struct {
 }
 
 func New() interface{} {
-	return &Tracing{}
+	return &Config{}
 }
 
-func (t Tracing) Access(kong *pdk.PDK) {
+func (conf Config) Access(kong *pdk.PDK) {
 	auth, err := kong.Request.GetHeader("Authorization")
 	if err != nil {
 		log.Println("Error GET Header: ", err)
@@ -31,4 +31,5 @@ func (t Tracing) Access(kong *pdk.PDK) {
 	}
 
 	log.Println("Authorization Header", "Authorization", auth)
+	kong.Log.Debug("KONG-DEBUG-WARD-PLUGIN: ", auth)
 }

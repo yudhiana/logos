@@ -36,6 +36,7 @@ func (data *EventData) Publish(exchangeName string) {
 	}()
 
 	connURL := GetRabbitURL()
+	log.Println("connURL : ", connURL)
 	conn, err := amqp.Dial(connURL)
 	if err != nil {
 		log.Println("Failed to connect to Rabbit MQ : ", err)

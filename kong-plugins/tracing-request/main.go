@@ -35,11 +35,11 @@ func (conf Config) Access(kong *pdk.PDK) {
 		kong.ServiceRequest.SetHeader("X-Request-Id", xRequestID)
 	}
 
-	responseStatus, errStatus := kong.Response.GetStatus()
-	if errStatus != nil {
-		kong.Log.Err("Failed to get response status", errStatus)
-		return
-	}
+	// responseStatus, errStatus := kong.Response.GetStatus()
+	// if errStatus != nil {
+	// 	kong.Log.Err("Failed to get response status", errStatus)
+	// 	return
+	// }
 
 	httpMethod, errMethod := kong.Request.GetMethod()
 	if errMethod != nil {
@@ -71,9 +71,9 @@ func (conf Config) Access(kong *pdk.PDK) {
 
 	metadata := &APIRequest{
 		RequestID: xRequestID,
-		Status:    responseStatus,
-		Method:    httpMethod,
-		URL:       path,
+		// Status:    responseStatus,
+		Method: httpMethod,
+		URL:    path,
 		// ClientIP:  clientIP,
 		UserAgent: userAgent,
 		AppOrigin: appOrigin,

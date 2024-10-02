@@ -41,10 +41,9 @@ func TracingRequest(data interface{}) {
 
 		irisCtx.Record()
 		irisCtx.Next()
-		
+
 		// waiting to callback handlers
 		if f, fok := irisCtx.IsRecording(); fok {
-			panic("test panic recording")
 			apiRequest.Status = f.StatusCode()
 			body := f.Body()
 			var response map[string]interface{}

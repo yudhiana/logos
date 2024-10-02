@@ -19,3 +19,7 @@ type APIRequest struct {
 	DurationAsMilis int64       `json:"duration_as_milis,omitempty"`
 	TimeStamp       time.Time   `json:"timestamp,omitempty"`
 }
+
+type TracerCtx struct {
+	Timestamp time.Time
+}

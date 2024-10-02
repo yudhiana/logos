@@ -17,6 +17,7 @@ func Panic(data interface{}) {
 
 	apiPanicRequest := &models.APIRequest{
 		RequestID: irisCtx.GetHeader("X-Request-Id"),
+		Status:    500,
 		Method:    irisCtx.Method(),
 		URL:       irisCtx.Request().RequestURI,
 		ClientIP:  irisCtx.RemoteAddr(),
@@ -30,7 +31,7 @@ func Panic(data interface{}) {
 	}
 
 	panicEvent := sange.EventData{
-		EventType: "panic-observer",
+		EventType: "api-request",
 		Data:      apiPanicRequest,
 	}
 	panicEvent.Publish(sange.GetEnv("OBSERVER_EVENT", "dmp_observer"))

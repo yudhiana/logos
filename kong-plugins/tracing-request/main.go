@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"log/slog"
 
 	"github.com/Kong/go-pdk"
 	"github.com/Kong/go-pdk/server"
@@ -31,5 +30,5 @@ func (t Tracing) Access(kong *pdk.PDK) {
 		return
 	}
 
-	slog.Info("Authorization Header", "Authorization", auth)
+	log.Println("Authorization Header", "Authorization", auth)
 }

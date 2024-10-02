@@ -95,6 +95,6 @@ func (conf Config) Access(kong *pdk.PDK) {
 	// } else {
 	// 	metadata.ResponseBody = mapBodyResponse
 	// }
-
+	kong.Log.Info("Captured", "metadata", metadata)
 	NewTracer().Captured(metadata)
 }

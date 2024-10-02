@@ -54,7 +54,7 @@ func TracingRequest(data interface{}) {
 
 			endTime := time.Now().UTC()
 			latency := endTime.Sub(currentTime)
-
+			panic("test panic with ctx")
 			apiRequest.DurationAsMilis = latency.Milliseconds()
 			f.FlushResponse()
 			f.ResetBody()

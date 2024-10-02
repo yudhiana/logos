@@ -7,7 +7,7 @@ import (
 	"github.com/Kong/go-pdk/server"
 )
 
-const (
+var (
 	Version  = "1.0.0"
 	Priority = 1
 )

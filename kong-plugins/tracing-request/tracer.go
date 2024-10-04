@@ -2,7 +2,10 @@ package main
 
 import (
 	"net/http"
+	"os"
 	"time"
+
+	kLog "github.com/Kong/go-pdk/log"
 )
 
 type APIRequest struct {
@@ -34,4 +37,27 @@ func (t *Tracer) Captured(msg *APIRequest) {
 	}
 
 	event.Publish(GetEnv("OBSERVER_EVENT", "dmp_observer"))
+}
+
+func (t *Tracer) Init(c Config, logger kLog.Log) *Tracer {
+	t.setEnvString("RABBIT_HOST", &c.RABBIT_HOST, logger)
+	t.setEnvString("RABBIT_PORT", &c.RABBIT_PORT, logger)
+	t.setEnvString("RABBIT_USER", &c.RABBIT_USER, logger)
+	t.setEnvString("RABBIT_PASS", &c.RABBIT_PASS, logger)
+	return t
+}
+
+func (t *Tracer) setEnvString(env string, value *string, logger kLog.Log) {
+	if value != nil {
+		t.setEnv(env, *value, logger)
+	}
+}
+
+func (t *Tracer) setEnv(env string, value string, logger kLog.Log) {
+	_ = logger.Info("Setting ", env, " to ", value)
+	err := os.Setenv(env, value)
+	if err != nil {
+		_ = logger.Err("Error setting environment ", env, " : ", err.Error())
+		panic(err)
+	}
 }

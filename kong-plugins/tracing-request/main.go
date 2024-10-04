@@ -17,6 +17,10 @@ func main() {
 }
 
 type Config struct {
+	RABBIT_HOST string
+	RABBIT_PORT string
+	RABBIT_USER string
+	RABBIT_PASS string
 }
 
 func New() interface{} {
@@ -24,6 +28,7 @@ func New() interface{} {
 }
 
 func (conf Config) Access(kong *pdk.PDK) {
+
 	xRequestID, errGet := kong.Request.GetHeader("X-Request-Id")
 	if errGet != nil {
 		kong.Log.Err("Failed to get X-Request-Id", errGet)
@@ -96,5 +101,5 @@ func (conf Config) Access(kong *pdk.PDK) {
 	// 	metadata.ResponseBody = mapBodyResponse
 	// }
 	kong.Log.Info("Captured", "metadata", metadata)
-	NewTracer().Captured(metadata)
+	NewTracer().Init(conf, kong.Log).Captured(metadata)
 }

@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/Kong/go-pdk"
 	"github.com/Kong/go-pdk/server"
 )
@@ -17,10 +15,10 @@ func main() {
 }
 
 type Config struct {
-	RABBIT_HOST     string
-	RABBIT_PORT     string
-	RABBIT_USER     string
-	RABBIT_PASSWORD string
+	RABBIT_HOST     string `json:"rabbit_host"`
+	RABBIT_PORT     string `json:"rabbit_port"`
+	RABBIT_USER     string `json:"rabbit_user"`
+	RABBIT_PASSWORD string `json:"rabbit_password"`
 }
 
 func New() interface{} {
@@ -28,7 +26,6 @@ func New() interface{} {
 }
 
 func (conf Config) Access(kong *pdk.PDK) {
-
 	xRequestID, errGet := kong.Request.GetHeader("X-Request-Id")
 	if errGet != nil {
 		kong.Log.Err("Failed to get X-Request-Id", errGet)
@@ -38,68 +35,12 @@ func (conf Config) Access(kong *pdk.PDK) {
 	if xRequestID == "" {
 		xRequestID = GenerateRequestID()
 		kong.ServiceRequest.SetHeader("X-Request-Id", xRequestID)
+		kong.Response.SetHeader("X-Request-Id", xRequestID)
 	}
 
-	// responseStatus, errStatus := kong.Response.GetStatus()
-	// if errStatus != nil {
-	// 	kong.Log.Err("Failed to get response status", errStatus)
-	// 	return
-	// }
+	NewTracer().Init(conf, kong.Log).BuildMessageRequest(kong).Publish("api-request")
+}
 
-	httpMethod, errMethod := kong.Request.GetMethod()
-	if errMethod != nil {
-		kong.Log.Err("Failed to get http method", errMethod)
-		return
-	}
-
-	appOrigin, errOrigin := kong.Request.GetHeader("Dmp-Origin")
-	if errOrigin != nil {
-		kong.Log.Err("Failed to get app origin", errOrigin)
-		return
-	}
-
-	headers, errHeaders := kong.Request.GetHeaders(-1)
-	if errHeaders != nil {
-		kong.Log.Err("Failed to get headers", errHeaders)
-		return
-	}
-
-	// body, errBody := kong.Request.GetRawBody()
-	// if errBody != nil {
-	// 	kong.Log.Err("Failed to get body", errBody)
-	// 	return
-	// }
-
-	// clientIP, _ := kong.Client.GetIp()
-	path, _ := kong.Request.GetPath()
-	userAgent, _ := kong.Request.GetHeader("User-Agent")
-
-	metadata := &APIRequest{
-		RequestID: xRequestID,
-		// Status:    responseStatus,
-		Method: httpMethod,
-		URL:    path,
-		// ClientIP:  clientIP,
-		UserAgent: userAgent,
-		AppOrigin: appOrigin,
-		Headers:   headers,
-		TimeStamp: time.Now().UTC(),
-	}
-
-	// var mapBody map[string]interface{}
-	// if errUnmarshal := json.Unmarshal(body, &mapBody); errUnmarshal != nil {
-	// 	metadata.RequestBody = string(body)
-	// } else {
-	// 	metadata.RequestBody = mapBody
-	// }
-
-	// bodyResponse, _ := kong.ServiceResponse.GetRawBody()
-	// var mapBodyResponse map[string]interface{}
-	// if errUnmarshal := json.Unmarshal(bodyResponse, &mapBodyResponse); errUnmarshal != nil {
-	// 	metadata.ResponseBody = string(bodyResponse)
-	// } else {
-	// 	metadata.ResponseBody = mapBodyResponse
-	// }
-	kong.Log.Info("Captured", "metadata", metadata)
-	NewTracer().Init(conf, kong.Log).Captured(metadata)
+func (conf Config) Response(kong *pdk.PDK) {
+	NewTracer().Init(conf, kong.Log).BuildMessageResponse(kong).Publish("api-response")
 }

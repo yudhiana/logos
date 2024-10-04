@@ -43,7 +43,7 @@ func (t *Tracer) Init(c Config, logger kLog.Log) *Tracer {
 	t.setEnvString("RABBIT_HOST", &c.RABBIT_HOST, logger)
 	t.setEnvString("RABBIT_PORT", &c.RABBIT_PORT, logger)
 	t.setEnvString("RABBIT_USER", &c.RABBIT_USER, logger)
-	t.setEnvString("RABBIT_PASS", &c.RABBIT_PASSWORD, logger)
+	t.setEnvString("RABBIT_PASSWORD", &c.RABBIT_PASSWORD, logger)
 	return t
 }
 

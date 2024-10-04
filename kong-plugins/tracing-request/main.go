@@ -17,10 +17,10 @@ func main() {
 }
 
 type Config struct {
-	RABBIT_HOST string
-	RABBIT_PORT string
-	RABBIT_USER string
-	RABBIT_PASS string
+	RABBIT_HOST     string
+	RABBIT_PORT     string
+	RABBIT_USER     string
+	RABBIT_PASSWORD string
 }
 
 func New() interface{} {

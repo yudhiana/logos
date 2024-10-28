@@ -1,14 +1,5 @@
 package logging
 
-import "github.com/sirupsen/logrus"
-
-func (log *LogEntry) Error(data interface{}, message string) {
-	if data != nil {
-		log.logger.WithFields(logrus.Fields{
-			"data": data,
-		}).Error(message)
-		return
-	}
-
-	log.logger.Error(message)
+func (log *LogEntry) Error(message string, args ...any) {
+	log.logger.Error(message, log.appLogger(args...)...)
 }

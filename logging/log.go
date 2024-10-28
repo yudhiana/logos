@@ -1,28 +1,42 @@
 package logging
 
 import (
-	"time"
-
-	"github.com/sirupsen/logrus"
+	"log/slog"
+	"os"
 )
 
 type LogEntry struct {
-	logger *logrus.Logger
+	logger *slog.Logger
+	app    map[string]interface{}
 }
 
-func NewLogEntry(formatter ...logrus.Formatter) *LogEntry {
-	var logFormatter logrus.Formatter
-
-	// set default to JSON formatter
-	logFormatter = &logrus.JSONFormatter{
-		TimestampFormat: time.RFC3339,
-	}
-
-	if len(formatter) > 0 {
-		logFormatter = formatter[0]
-	}
-
+func NewLogger() *LogEntry {
 	return &LogEntry{
-		logger: SetupLogger(logFormatter),
+		logger: ConfigureLogger(),
+		app: map[string]interface{}{
+			"source": os.Getenv("APP_NAME"),
+		},
 	}
+}
+
+func ConfigureLogger() *slog.Logger {
+	logFormatter := slog.NewJSONHandler(os.Stdout, nil)
+	return slog.New(logFormatter)
+}
+
+func (log *LogEntry) appLogger(args ...any) (results []any) {
+	for k, v := range log.app {
+		results = append(results, k, v)
+	}
+
+	countArgs := len(args)
+	if countArgs > 0 {
+		if countArgs%2 != 0 {
+			log.logger.Error("args must be in pairs k/v", args...)
+		} else {
+			results = append(results, args...)
+		}
+	}
+
+	return
 }

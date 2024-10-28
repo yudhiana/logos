@@ -60,12 +60,12 @@ func (pg *ProducerGroup) encodeMessage(message any) sarama.Encoder {
 		return sarama.StringEncoder(string(msg))
 	case map[string]string, map[string]any, map[any]any:
 		byteMsg, _ := json.Marshal(msg)
-		return sarama.ByteEncoder(byteMsg)
+		return sarama.StringEncoder(string(byteMsg))
 	default:
 		t := reflect.TypeOf(msg)
 		if t.Kind() == reflect.Struct {
 			byteMsg, _ := json.Marshal(msg)
-			return sarama.ByteEncoder(byteMsg)
+			return sarama.StringEncoder(string(byteMsg))
 		}
 		return sarama.StringEncoder(fmt.Sprintf("%v", msg))
 	}

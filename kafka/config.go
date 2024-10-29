@@ -13,27 +13,26 @@ import (
 	"github.com/IBM/sarama"
 )
 
+type KafkaType string
+
 const (
-	Producer = "producer"
-	Consumer = "consumer"
+	Producer KafkaType = "producer"
+	Consumer KafkaType = "consumer"
 )
 
 func GetConsumerConfig() *ConsumerGroup {
 	return &ConsumerGroup{
-		Name:   os.Getenv("KAFKA_CONSUMER_GROUP_NAME"),
-		Topics: strings.Split(os.Getenv("KAFKA_TOPIC"), ","),
-		Hosts:  strings.Split(os.Getenv("KAFKA_HOST"), ","),
+		Hosts: strings.Split(os.Getenv("KAFKA_HOST"), ","),
 	}
 }
 
 func GetProducerConfig() *ProducerGroup {
 	return &ProducerGroup{
-		Topics: strings.Split(os.Getenv("KAFKA_TOPIC"), ","),
-		Hosts:  strings.Split(os.Getenv("KAFKA_HOST"), ","),
+		Hosts: strings.Split(os.Getenv("KAFKA_HOST"), ","),
 	}
 }
 
-func GetKafkaConfig(useAs string) *sarama.Config {
+func GetKafkaConfig(useAs KafkaType) *sarama.Config {
 	saramaConfig := sarama.NewConfig()
 	saramaConfig.Version = sarama.V3_6_0_0
 

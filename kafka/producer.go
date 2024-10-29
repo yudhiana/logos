@@ -13,8 +13,7 @@ var kafkaShutdownOnce sync.Once
 var kafkaAsyncProducer sarama.AsyncProducer
 
 type ProducerGroup struct {
-	Topics []string
-	Hosts  []string
+	Hosts []string
 }
 
 // NewKafkaProducer initializes and returns a new Kafka ProducerGroup.
@@ -40,10 +39,10 @@ func NewKafkaProducer(pg *ProducerGroup) *ProducerGroup {
 // PublishMessages encodes the provided message and sends it to Kafka asynchronously.
 // The message is encoded using the encodeMessage method and then passed to produceMessages
 // to be published to the specified Kafka topic.
-func (pg *ProducerGroup) PublishMessages(message any) {
+func (pg *ProducerGroup) PublishMessages(topic string, message any) {
 	if message != nil && kafkaAsyncProducer != nil {
 		value := pg.encodeMessage(message)
-		go pg.produceMessages(value)
+		go pg.produceMessages(topic, value)
 	}
 }
 
@@ -99,9 +98,9 @@ func (pg *ProducerGroup) startSuccessErrorHandler() {
 
 // produceMessages sends the provided encoded message to the first Kafka topic in the ProducerGroup.
 // The message is sent asynchronously, and its success or failure is handled by the startSuccessErrorHandler.
-func (pg *ProducerGroup) produceMessages(value sarama.Encoder) {
+func (pg *ProducerGroup) produceMessages(topic string, value sarama.Encoder) {
 	message := &sarama.ProducerMessage{
-		Topic: pg.Topics[0],
+		Topic: topic,
 		Value: value,
 		Key:   nil,
 	}

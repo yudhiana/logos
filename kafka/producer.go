@@ -13,7 +13,9 @@ var kafkaShutdownOnce sync.Once
 var kafkaAsyncProducer sarama.AsyncProducer
 
 type ProducerGroup struct {
-	Hosts []string
+	ManualConfiguration *sarama.Config
+	Hosts               []string
+	AssignmentType      KafkaProducerPartitionType
 }
 
 // NewKafkaProducer initializes and returns a new Kafka ProducerGroup.
@@ -68,6 +70,21 @@ func (pg *ProducerGroup) encodeMessage(message any) sarama.Encoder {
 func (pg *ProducerGroup) setUpAsyncProducer() {
 	kafkaProducerOnce.Do(func() {
 		producerConfig := GetKafkaConfig(Producer)
+		switch pg.AssignmentType {
+		case ProducerAssignmentRandomPartition:
+			producerConfig.Producer.Partitioner = sarama.NewRandomPartitioner
+		case ProducerAssignmentRoundRobinPartition:
+			producerConfig.Producer.Partitioner = sarama.NewRoundRobinPartitioner
+		case ProducerAssignmentHashPartition:
+			producerConfig.Producer.Partitioner = sarama.NewHashPartitioner
+		case ProducerAssignmentManualPartition:
+			producerConfig.Producer.Partitioner = sarama.NewManualPartitioner
+		}
+
+		if pg.ManualConfiguration != nil {
+			producerConfig = pg.ManualConfiguration
+		}
+
 		var err error
 		kafkaAsyncProducer, err = sarama.NewAsyncProducer(pg.Hosts, producerConfig)
 		if err != nil {

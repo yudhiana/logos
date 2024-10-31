@@ -14,21 +14,37 @@ import (
 )
 
 type KafkaType string
+type KafkaConsumerAssignmentType string
+type KafkaProducerPartitionType string
 
 const (
 	Producer KafkaType = "producer"
 	Consumer KafkaType = "consumer"
 )
 
+const (
+	ConsumerGroupAssignmentStrategyRoundRobin KafkaConsumerAssignmentType = "round-robin"
+	ConsumerGroupAssignmentStrategySticky     KafkaConsumerAssignmentType = "sticky"
+	ConsumerGroupAssignmentStrategyRange      KafkaConsumerAssignmentType = "range"
+)
+const (
+	ProducerAssignmentRandomPartition     KafkaProducerPartitionType = "random-partition"
+	ProducerAssignmentRoundRobinPartition KafkaProducerPartitionType = "round-robin-partition"
+	ProducerAssignmentHashPartition       KafkaProducerPartitionType = "hash-partition"
+	ProducerAssignmentManualPartition     KafkaProducerPartitionType = "manual-partition"
+)
+
 func GetConsumerConfig() *ConsumerGroup {
 	return &ConsumerGroup{
-		Hosts: strings.Split(os.Getenv("KAFKA_HOST"), ","),
+		Hosts:          strings.Split(os.Getenv("KAFKA_HOST"), ","),
+		AssignmentType: ConsumerGroupAssignmentStrategyRoundRobin,
 	}
 }
 
 func GetProducerConfig() *ProducerGroup {
 	return &ProducerGroup{
-		Hosts: strings.Split(os.Getenv("KAFKA_HOST"), ","),
+		Hosts:          strings.Split(os.Getenv("KAFKA_HOST"), ","),
+		AssignmentType: ProducerAssignmentRoundRobinPartition,
 	}
 }
 

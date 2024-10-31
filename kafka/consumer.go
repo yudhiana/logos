@@ -11,9 +11,12 @@ import (
 type Handler func(*sarama.ConsumerMessage, sarama.ConsumerGroup, sarama.ConsumerGroupSession) error
 
 type ConsumerGroup struct {
-	Name   string
-	Topics []string
-	Hosts  []string
+	ManualConfiguration *sarama.Config
+	AssignmentType      KafkaConsumerAssignmentType
+	AutoCommit          bool
+	GroupID             string
+	Topics              []string
+	Hosts               []string
 }
 
 // NewKafkaConsumerGroup sets up a new Kafka consumer group with the given groupID and hosts,
@@ -25,7 +28,7 @@ type ConsumerGroup struct {
 func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 
 	// Set up the Kafka consumer group
-	client, errConsumer := GetConsumerGroup(cg.Name, cg.Hosts...)
+	client, errConsumer := GetConsumerGroup(cg)
 	if errConsumer != nil {
 		logging.NewLogger().Error("kafka consumer error", "error", errConsumer)
 		return
@@ -78,10 +81,29 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 // GetConsumerGroup creates a new Kafka consumer group with the given groupID and hosts.
 // It sets up the consumer group with the config returned by GetKafkaConfig.
 // The returned consumer group is ready to start consuming from Kafka.
-func GetConsumerGroup(groupID string, hosts ...string) (sarama.ConsumerGroup, error) {
+func GetConsumerGroup(cg *ConsumerGroup) (sarama.ConsumerGroup, error) {
 	consumerConfig := GetKafkaConfig(Consumer)
+	switch cg.AssignmentType {
+	case ConsumerGroupAssignmentStrategyRoundRobin:
+		consumerConfig.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}
+		consumerConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRoundRobin()
+	case ConsumerGroupAssignmentStrategySticky:
+		consumerConfig.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategySticky()}
+		consumerConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategySticky()
+	case ConsumerGroupAssignmentStrategyRange:
+		consumerConfig.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRange()}
+		consumerConfig.Consumer.Group.Rebalance.Strategy = sarama.NewBalanceStrategyRange()
+	}
 
-	consumer, errConsumer := sarama.NewConsumerGroup(hosts, groupID, consumerConfig)
+	if cg.AutoCommit {
+		consumerConfig.Consumer.Offsets.AutoCommit.Enable = true
+	}
+
+	if cg.ManualConfiguration != nil {
+		consumerConfig = cg.ManualConfiguration
+	}
+
+	consumer, errConsumer := sarama.NewConsumerGroup(cg.Hosts, cg.GroupID, consumerConfig)
 	if errConsumer != nil {
 		return nil, errConsumer
 	}

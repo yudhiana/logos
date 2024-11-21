@@ -18,6 +18,13 @@ type ConsumerGroup struct {
 	GroupID             string
 	Topics              []string
 	Hosts               []string
+	RetryConfiguration  RetryConfiguration
+}
+
+type RetryConfiguration struct {
+	Interval      time.Duration
+	MaxRetries    int
+	BackoffFactor float64
 }
 
 // NewKafkaConsumerGroup sets up a new Kafka consumer group with the given groupID and hosts,
@@ -30,13 +37,13 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	retryInterval := 5 * time.Second
-	maxRetries := -1
-	backoffFactor := 2.0
+	retryInterval := cg.RetryConfiguration.Interval
+	maxRetries := cg.RetryConfiguration.MaxRetries
+	backoffFactor := cg.RetryConfiguration.BackoffFactor
 
 	for attempt := 0; maxRetries == -1 || attempt <= maxRetries; attempt++ {
 		if attempt > 0 {
-			logging.NewLogger().Info(fmt.Sprintf("Attempt %d to connect to Kafka...", attempt))
+			logging.NewLogger().Info(fmt.Sprintf("attempt %d to connect to Kafka...", attempt))
 		}
 
 		// set up the Kafka consumer group
@@ -54,7 +61,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 			continue
 		}
 
-		logging.NewLogger().Info("Connected to Kafka successfully")
+		logging.NewLogger().Info("connected to Kafka successfully")
 		defer client.Close()
 
 		go cg.handleGracefulShutdown(ctx, client)
@@ -64,7 +71,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		}
 
 		// reconnect in case of failure
-		logging.NewLogger().Info("Reconnecting to Kafka...")
+		logging.NewLogger().Info("reconnecting to Kafka...")
 		time.Sleep(retryInterval)
 	}
 }

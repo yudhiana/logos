@@ -18,7 +18,7 @@ type ConsumerGroup struct {
 	GroupID             string
 	Topics              []string
 	Hosts               []string
-	RetryConfiguration  *RetryConfiguration
+	RetryConfiguration  RetryConfiguration
 }
 
 type RetryConfiguration struct {

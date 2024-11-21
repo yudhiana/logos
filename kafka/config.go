@@ -39,7 +39,7 @@ func GetConsumerConfig() *ConsumerGroup {
 	return &ConsumerGroup{
 		Hosts:          strings.Split(os.Getenv("KAFKA_HOST"), ","),
 		AssignmentType: ConsumerGroupAssignmentStrategyRoundRobin,
-		RetryConfiguration: &RetryConfiguration{
+		RetryConfiguration: RetryConfiguration{
 			Interval:      5 * time.Second, // initial retry interval
 			MaxRetries:    -1,              // -1 for infinite retries
 			BackoffFactor: 2.0,             // exponential backoff multiplier

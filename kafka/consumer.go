@@ -51,7 +51,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		if errConsumer != nil {
 			logging.NewLogger().Error("failed to create kafka consumer", "error", errConsumer)
 
-			if maxRetries < 0 && attempt == maxRetries {
+			if maxRetries < 0 && attempt-1 == maxRetries {
 				return
 			}
 

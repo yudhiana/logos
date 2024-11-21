@@ -34,8 +34,10 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 	maxRetries := -1
 	backoffFactor := 2.0
 
-	for attempt := 1; maxRetries == -1 || attempt <= maxRetries; attempt++ {
-		logging.NewLogger().Info(fmt.Sprintf("Attempt %d to connect to Kafka...", attempt))
+	for attempt := 0; maxRetries == -1 || attempt <= maxRetries; attempt++ {
+		if attempt > 0 {
+			logging.NewLogger().Info(fmt.Sprintf("Attempt %d to connect to Kafka...", attempt))
+		}
 
 		// set up the Kafka consumer group
 		client, errConsumer := GetConsumerGroup(cg)

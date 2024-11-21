@@ -57,16 +57,16 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		logging.NewLogger().Info("Connected to Kafka successfully")
 		defer client.Close()
 
-		go cg.consumerMessage(ctx, client, handler)
-
 		go cg.handleGracefulShutdown(ctx, client)
+
+		if err := cg.consumerMessage(ctx, client, handler); err != nil {
+			logging.NewLogger().Error("kafka consumer error", "error", err)
+		}
 
 		// reconnect in case of failure
 		logging.NewLogger().Info("Reconnecting to Kafka...")
 		time.Sleep(retryInterval)
-		return
 	}
-
 }
 
 // GetConsumerGroup creates a new Kafka consumer group with the given groupID and hosts.
@@ -101,17 +101,18 @@ func GetConsumerGroup(cg *ConsumerGroup) (sarama.ConsumerGroup, error) {
 	return consumer, nil
 }
 
-func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.ConsumerGroup, handler Handler) {
+func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.ConsumerGroup, handler Handler) error {
 	defer Recover()
 	for {
 		select {
 		case <-ctx.Done():
-			return
+			return ctx.Err()
 		default:
 			logging.NewLogger().Info("Listening for kafka messages")
 			err := client.Consume(ctx, cg.Topics, NewKafkaHandler(handler, client))
 			if err != nil {
 				logging.NewLogger().Error("kafka consumer error", "error", err)
+				return err
 			}
 		}
 	}

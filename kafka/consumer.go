@@ -118,7 +118,6 @@ func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.Cons
 			logging.NewLogger().Info("Listening for kafka messages")
 			err := client.Consume(ctx, cg.Topics, NewKafkaHandler(handler, client))
 			if err != nil {
-				logging.NewLogger().Error("kafka consumer error", "error", err)
 				return err
 			}
 		}

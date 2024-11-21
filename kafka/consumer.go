@@ -18,7 +18,7 @@ type ConsumerGroup struct {
 	GroupID             string
 	Topics              []string
 	Hosts               []string
-	RetryConfiguration  RetryConfiguration
+	RetryConfiguration  *RetryConfiguration
 }
 
 type RetryConfiguration struct {
@@ -51,7 +51,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		if errConsumer != nil {
 			logging.NewLogger().Error("failed to create kafka consumer", "error", errConsumer)
 
-			if maxRetries != -1 && attempt == maxRetries {
+			if maxRetries < 0 && attempt == maxRetries {
 				return
 			}
 

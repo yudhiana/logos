@@ -13,6 +13,7 @@ var kafkaShutdownOnce sync.Once
 var kafkaAsyncProducer sarama.AsyncProducer
 
 type ProducerGroup struct {
+	Idempotent          bool
 	ManualConfiguration *sarama.Config
 	Hosts               []string
 	AssignmentType      KafkaProducerPartitionType
@@ -79,6 +80,10 @@ func (pg *ProducerGroup) setUpAsyncProducer() {
 			producerConfig.Producer.Partitioner = sarama.NewHashPartitioner
 		case ProducerAssignmentManualPartition:
 			producerConfig.Producer.Partitioner = sarama.NewManualPartitioner
+		}
+
+		if pg.Idempotent {
+			producerConfig.Producer.Idempotent = true
 		}
 
 		if pg.ManualConfiguration != nil {

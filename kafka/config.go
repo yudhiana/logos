@@ -43,6 +43,7 @@ func GetConsumerConfig() *ConsumerGroup {
 
 func GetProducerConfig() *ProducerGroup {
 	return &ProducerGroup{
+		Idempotent:     true,
 		Hosts:          strings.Split(os.Getenv("KAFKA_HOST"), ","),
 		AssignmentType: ProducerAssignmentRoundRobinPartition,
 	}

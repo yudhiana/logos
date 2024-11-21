@@ -41,7 +41,8 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 	maxRetries := cg.RetryConfiguration.MaxRetries
 	backoffFactor := cg.RetryConfiguration.BackoffFactor
 
-	for attempt := 0; maxRetries == -1 || attempt <= maxRetries; attempt++ {
+	for attempt := 0; maxRetries < 0 || attempt <= maxRetries; attempt++ {
+		logging.NewLogger().Info("config", "maxRetries", maxRetries, "backoffFactor", backoffFactor, "retryInterval", retryInterval, "attempt", attempt)
 		if attempt > 0 {
 			logging.NewLogger().Info(fmt.Sprintf("attempt %d to connect to Kafka...", attempt))
 		}

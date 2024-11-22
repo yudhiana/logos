@@ -33,7 +33,7 @@ type RetryConfiguration struct {
 // The function will only return when either the consumer group is closed or the context is canceled.
 // Closing the consumer group or canceling the context will cause the function to return.
 // The function is designed to be run in a goroutine, so it will not block the calling goroutine.
-func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
+func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -41,41 +41,45 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 	maxRetries := cg.RetryConfiguration.MaxRetries
 	backoffFactor := cg.RetryConfiguration.BackoffFactor
 
+	go func() {
+		<-WaitForSignal()
+		cancel()
+	}()
+
 	for attempt := 0; maxRetries < 0 || attempt <= maxRetries; attempt++ {
-		logging.NewLogger().Info("config", "maxRetries", maxRetries, "backoffFactor", backoffFactor, "retryInterval", retryInterval, "attempt", attempt)
 		if attempt > 0 {
 			logging.NewLogger().Info(fmt.Sprintf("attempt %d to connect to Kafka...", attempt))
 		}
 
 		// set up the Kafka consumer group
-		client, errConsumer := GetConsumerGroup(cg)
-		if errConsumer != nil {
-			logging.NewLogger().Error("failed to create kafka consumer", "error", errConsumer)
+		consumerGroup, errConsumerGroup := GetConsumerGroup(cg)
+		if errConsumerGroup != nil {
+			logging.NewLogger().Error("failed to create kafka consumer group", "error", errConsumerGroup)
 
-			if attempt == maxRetries && maxRetries > 0 {
-				logging.NewLogger().Warn("reached max retries", "maxRetries", maxRetries)
-				break
+			if attempt == maxRetries && maxRetries != -1 {
+				return errConsumerGroup
 			}
 
-			// exponential backoff
+			// exponential backoff for retries
 			sleepDuration := retryInterval * time.Duration(attempt) * time.Duration(backoffFactor)
 			time.Sleep(sleepDuration)
 			continue
 		}
 
 		logging.NewLogger().Info("connected to Kafka successfully")
-		defer client.Close()
+		defer consumerGroup.Close()
 
-		go cg.handleGracefulShutdown(ctx, client)
+		cg.consumerMessage(ctx, consumerGroup, handler)
 
-		if err := cg.consumerMessage(ctx, client, handler); err != nil {
-			logging.NewLogger().Error("kafka consumer error", "error", err)
+		if ctx.Err() == context.Canceled {
+			break
 		}
 
 		// reconnect in case of failure
-		logging.NewLogger().Info("reconnecting to Kafka...")
+		logging.NewLogger().Info("lost connection to Kafka. attempting to reconnecting to Kafka...")
 		time.Sleep(retryInterval)
 	}
+	return nil
 }
 
 // GetConsumerGroup creates a new Kafka consumer group with the given groupID and hosts.
@@ -110,17 +114,22 @@ func GetConsumerGroup(cg *ConsumerGroup) (sarama.ConsumerGroup, error) {
 	return consumer, nil
 }
 
-func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.ConsumerGroup, handler Handler) error {
+func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.ConsumerGroup, handler Handler) {
 	defer Recover()
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			logging.NewLogger().Info("shutting down by context", "operation", "kafka-consumer-disconnect")
+			if err := client.Close(); err != nil {
+				logging.NewLogger().Error("failed to close kafka consumer", "error", err)
+			}
+			return
 		default:
 			logging.NewLogger().Info("Listening for kafka messages")
 			err := client.Consume(ctx, cg.Topics, NewKafkaHandler(handler, client))
 			if err != nil {
-				return err
+				logging.NewLogger().Error("kafka consumer error", "error", err)
+				return
 			}
 		}
 	}
@@ -135,7 +144,6 @@ func (cg *ConsumerGroup) handleGracefulShutdown(ctx context.Context, client sara
 		}
 
 	case <-ctx.Done():
-		logging.NewLogger().Info("shutting down by context", "operation", "kafka-consumer-disconnect")
 		if err := client.Close(); err != nil {
 			logging.NewLogger().Error("failed to close kafka consumer", "error", err)
 		}

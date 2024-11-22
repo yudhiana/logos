@@ -1,6 +1,7 @@
 package kafka
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"os/signal"
@@ -36,7 +37,10 @@ const (
 )
 
 func GetConsumerConfig() *ConsumerGroup {
+	ctx, cancel := context.WithCancel(context.Background())
 	return &ConsumerGroup{
+		cancel:         cancel,
+		ctx:            ctx,
 		Hosts:          strings.Split(os.Getenv("KAFKA_HOST"), ","),
 		AssignmentType: ConsumerGroupAssignmentStrategyRoundRobin,
 		RetryConfiguration: RetryConfiguration{

@@ -13,6 +13,7 @@ type Handler func(*sarama.ConsumerMessage, sarama.ConsumerGroup, sarama.Consumer
 
 type ConsumerGroup struct {
 	cancel context.CancelFunc
+	ctx    context.Context
 
 	ManualConfiguration *sarama.Config
 	AssignmentType      KafkaConsumerAssignmentType

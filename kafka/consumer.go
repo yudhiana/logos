@@ -12,6 +12,8 @@ import (
 type Handler func(*sarama.ConsumerMessage, sarama.ConsumerGroup, sarama.ConsumerGroupSession) error
 
 type ConsumerGroup struct {
+	cancel context.CancelFunc
+
 	ManualConfiguration *sarama.Config
 	AssignmentType      KafkaConsumerAssignmentType
 	AutoCommit          bool
@@ -35,7 +37,7 @@ type RetryConfiguration struct {
 // The function is designed to be run in a goroutine, so it will not block the calling goroutine.
 func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+	cg.cancel = cancel
 
 	retryInterval := cg.RetryConfiguration.Interval
 	maxRetries := cg.RetryConfiguration.MaxRetries
@@ -135,17 +137,6 @@ func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.Cons
 	}
 }
 
-func (cg *ConsumerGroup) handleGracefulShutdown(ctx context.Context, client sarama.ConsumerGroup) {
-	select {
-	case <-WaitForSignal():
-		logging.NewLogger().Warn("shutting down by signals", "operation", "kafka-consumer-disconnect")
-		if err := client.Close(); err != nil {
-			logging.NewLogger().Error("failed to close kafka consumer", "error", err)
-		}
-
-	case <-ctx.Done():
-		if err := client.Close(); err != nil {
-			logging.NewLogger().Error("failed to close kafka consumer", "error", err)
-		}
-	}
+func (cg *ConsumerGroup) CanceledConsumer() {
+	cg.cancel()
 }

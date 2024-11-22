@@ -5,6 +5,7 @@ go 1.23
 require (
 	github.com/IBM/sarama v1.43.3
 	github.com/google/uuid v1.6.0
+	github.com/kataras/iris/v12 v12.1.8
 	github.com/rabbitmq/amqp091-go v1.10.0
 )
 
@@ -42,7 +43,6 @@ require (
 	github.com/jcmturner/rpc/v2 v2.0.3 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/kataras/golog v0.1.8 // indirect
-	github.com/kataras/iris/v12 v12.1.8
 	github.com/kataras/pio v0.0.11 // indirect
 	github.com/kataras/sitemap v0.0.6 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect

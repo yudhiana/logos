@@ -54,7 +54,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 
 			if attempt == maxRetries && maxRetries > 0 {
 				logging.NewLogger().Warn("reached max retries", "maxRetries", maxRetries)
-				return
+				break
 			}
 
 			// exponential backoff

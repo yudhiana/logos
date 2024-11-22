@@ -1,11 +1,13 @@
 package ward
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"runtime"
 	"strings"
+	"time"
 )
 
 func GetEnv(key string, fallback string) string {
@@ -49,4 +51,13 @@ func GetStackTrace() (stacktrace string) {
 	}
 
 	return fmt.Sprintf("\n:stacktrace:\n%s", stacktrace)
+}
+
+func SleepWithContext(ctx context.Context, d time.Duration) error {
+	select {
+	case <-ctx.Done():
+		return ctx.Err()
+	case <-time.After(d):
+		return nil
+	}
 }

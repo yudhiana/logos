@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/IBM/sarama"
+	"github.com/mataharibiz/ward"
 	"github.com/mataharibiz/ward/logging"
 )
 
@@ -54,10 +55,6 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 			logging.NewLogger().Info(fmt.Sprintf("attempt %d to connect to Kafka...", attempt))
 		}
 
-		if ctx.Err() == context.Canceled {
-			break
-		}
-
 		// set up the Kafka consumer group
 		consumerGroup, errConsumerGroup := GetConsumerGroup(cg)
 		if errConsumerGroup != nil {
@@ -69,7 +66,10 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 
 			// exponential backoff for retries
 			sleepDuration := retryInterval * time.Duration(attempt) * time.Duration(backoffFactor)
-			time.Sleep(sleepDuration)
+			if errSleepCtx := ward.SleepWithContext(ctx, sleepDuration); errSleepCtx != nil {
+				return errSleepCtx
+			}
+
 			continue
 		}
 
@@ -77,6 +77,9 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 		defer consumerGroup.Close()
 
 		cg.consumerMessage(ctx, consumerGroup, handler)
+		if ctx.Err() == context.Canceled {
+			break
+		}
 
 		// reconnect in case of failure
 		logging.NewLogger().Info("lost connection to Kafka. attempting to reconnecting to Kafka...")

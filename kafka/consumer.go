@@ -64,6 +64,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		cancel()
 	}()
 
+	var errorId string
 	for attempt := 0; maxRetries < 0 || attempt <= maxRetries; attempt++ {
 		if attempt > 0 {
 			logging.NewLogger().Info(fmt.Sprintf("attempt %d to connect to Kafka...", attempt))
@@ -78,7 +79,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 				return
 			}
 
-			cg.errorId = cg.writeLog(cg.errorId, errConsumerGroup)
+			cg.writeLog(errorId, errConsumerGroup)
 
 			// exponential backoff for retries
 			sleepDuration := retryInterval * time.Duration(attempt) * time.Duration(backoffFactor)
@@ -96,7 +97,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 
 		errConsumer := cg.consumerMessage(ctx, consumerGroup, handler)
 		if errConsumer != nil {
-			cg.errorId = cg.writeLog(cg.errorId, errConsumer)
+			cg.writeLog(errorId, errConsumer)
 		}
 
 		if ctx.Err() == context.Canceled {
@@ -166,7 +167,7 @@ func (cg *ConsumerGroup) CanceledConsumer() {
 	cg.cancel()
 }
 
-func (cg *ConsumerGroup) writeLog(errorId string, errMsg error) (id string) {
+func (cg *ConsumerGroup) writeLog(errorId string, errMsg error) {
 	re := cg.RecordError
 	if re.Active {
 		if errorId == "" {
@@ -174,10 +175,9 @@ func (cg *ConsumerGroup) writeLog(errorId string, errMsg error) (id string) {
 			if errLog != nil {
 				logging.NewLogger().Error("failed to write log", "error", errLog)
 			}
-			return id
+			cg.errorId = id
 		}
 	}
-	return
 }
 func (cg *ConsumerGroup) GetLatestRetryCount() int {
 	return cg.latestRetryCount

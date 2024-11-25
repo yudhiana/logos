@@ -19,7 +19,7 @@ type RecordError struct {
 	Active     bool
 	DB         *mongo.Database
 	Collection string
-	WriteLog   WriteLog
+	WriteLog
 }
 
 type ConsumerGroup struct {

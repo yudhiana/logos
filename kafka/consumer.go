@@ -13,8 +13,9 @@ import (
 type Handler func(*sarama.ConsumerMessage, sarama.ConsumerGroup, sarama.ConsumerGroupSession) error
 
 type ConsumerGroup struct {
-	cancel context.CancelFunc
-	ctx    context.Context
+	cancel           context.CancelFunc
+	ctx              context.Context
+	latestRetryCount int
 
 	ManualConfiguration *sarama.Config
 	AssignmentType      KafkaConsumerAssignmentType
@@ -72,6 +73,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 
 			continue
 		}
+		cg.latestRetryCount = attempt
 
 		logging.NewLogger().Info("connected to Kafka successfully")
 		defer consumerGroup.Close()
@@ -82,7 +84,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 		}
 
 		// reconnect in case of failure
-		logging.NewLogger().Info("lost connection to Kafka. attempting to reconnecting to Kafka...")
+		logging.NewLogger().Info("lost connection to Kafka... attempting to reconnecting Kafka...")
 		time.Sleep(retryInterval)
 	}
 	return nil
@@ -143,4 +145,8 @@ func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.Cons
 
 func (cg *ConsumerGroup) CanceledConsumer() {
 	cg.cancel()
+}
+
+func (cg *ConsumerGroup) GetLatestRetryCount() int {
+	return cg.latestRetryCount
 }

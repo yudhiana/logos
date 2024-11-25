@@ -8,14 +8,27 @@ import (
 	"github.com/IBM/sarama"
 	"github.com/mataharibiz/ward"
 	"github.com/mataharibiz/ward/logging"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Handler func(*sarama.ConsumerMessage, sarama.ConsumerGroup, sarama.ConsumerGroupSession) error
 
+type WriteLog func(db *mongo.Database, collection string, args ...any) (id string, err error)
+
+type RecordError struct {
+	Active     bool
+	DB         *mongo.Database
+	Collection string
+	WriteLog   WriteLog
+}
+
 type ConsumerGroup struct {
-	cancel           context.CancelFunc
-	ctx              context.Context
+	cancel context.CancelFunc
+	ctx    context.Context
+
 	latestRetryCount int
+	errorId          string
+	RecordError      RecordError
 
 	ManualConfiguration *sarama.Config
 	AssignmentType      KafkaConsumerAssignmentType
@@ -38,7 +51,7 @@ type RetryConfiguration struct {
 // The function will only return when either the consumer group is closed or the context is canceled.
 // Closing the consumer group or canceling the context will cause the function to return.
 // The function is designed to be run in a goroutine, so it will not block the calling goroutine.
-func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
+func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cg.cancel = cancel
 
@@ -62,13 +75,16 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 			logging.NewLogger().Error("failed to create kafka consumer group", "error", errConsumerGroup)
 
 			if attempt == maxRetries && maxRetries != -1 {
-				return errConsumerGroup
+				return
 			}
+
+			cg.errorId = cg.writeLog(cg.errorId, errConsumerGroup)
 
 			// exponential backoff for retries
 			sleepDuration := retryInterval * time.Duration(attempt) * time.Duration(backoffFactor)
 			if errSleepCtx := ward.SleepWithContext(ctx, sleepDuration); errSleepCtx != nil {
-				return errSleepCtx
+				logging.NewLogger().Error("failed to sleep", "error", errSleepCtx)
+				return
 			}
 
 			continue
@@ -78,7 +94,11 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 		logging.NewLogger().Info("connected to Kafka successfully")
 		defer consumerGroup.Close()
 
-		cg.consumerMessage(ctx, consumerGroup, handler)
+		errConsumer := cg.consumerMessage(ctx, consumerGroup, handler)
+		if errConsumer != nil {
+			cg.errorId = cg.writeLog(cg.errorId, errConsumer)
+		}
+
 		if ctx.Err() == context.Canceled {
 			break
 		}
@@ -87,7 +107,6 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) error {
 		logging.NewLogger().Info("lost connection to Kafka... attempting to reconnecting Kafka...")
 		time.Sleep(retryInterval)
 	}
-	return nil
 }
 
 // GetConsumerGroup creates a new Kafka consumer group with the given groupID and hosts.
@@ -122,7 +141,7 @@ func GetConsumerGroup(cg *ConsumerGroup) (sarama.ConsumerGroup, error) {
 	return consumer, nil
 }
 
-func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.ConsumerGroup, handler Handler) {
+func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.ConsumerGroup, handler Handler) error {
 	defer Recover()
 	for {
 		select {
@@ -131,13 +150,13 @@ func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.Cons
 			if err := client.Close(); err != nil {
 				logging.NewLogger().Error("failed to close kafka consumer", "error", err)
 			}
-			return
+			return ctx.Err()
 		default:
 			logging.NewLogger().Info("Listening for kafka messages")
 			err := client.Consume(ctx, cg.Topics, NewKafkaHandler(handler, client))
 			if err != nil {
 				logging.NewLogger().Error("kafka consumer error", "error", err)
-				return
+				return err
 			}
 		}
 	}
@@ -147,6 +166,23 @@ func (cg *ConsumerGroup) CanceledConsumer() {
 	cg.cancel()
 }
 
+func (cg *ConsumerGroup) writeLog(errorId string, errMsg error) (id string) {
+	re := cg.RecordError
+	if re.Active {
+		if errorId == "" {
+			id, errLog := re.WriteLog(re.DB, re.Collection, errMsg)
+			if errLog != nil {
+				logging.NewLogger().Error("failed to write log", "error", errLog)
+			}
+			return id
+		}
+	}
+	return
+}
 func (cg *ConsumerGroup) GetLatestRetryCount() int {
 	return cg.latestRetryCount
+}
+
+func (cg *ConsumerGroup) GetErrorId() string {
+	return cg.errorId
 }

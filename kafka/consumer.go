@@ -80,6 +80,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 			}
 
 			cg.writeLog(errorId, errConsumerGroup)
+			errorId = cg.GetErrorId()
 
 			// exponential backoff for retries
 			sleepDuration := retryInterval * time.Duration(attempt) * time.Duration(backoffFactor)
@@ -98,6 +99,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		errConsumer := cg.consumerMessage(ctx, consumerGroup, handler)
 		if errConsumer != nil {
 			cg.writeLog(errorId, errConsumer)
+			errorId = cg.GetErrorId()
 		}
 
 		if ctx.Err() == context.Canceled {

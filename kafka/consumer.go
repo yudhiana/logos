@@ -96,6 +96,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		logging.NewLogger().Info("connected to Kafka successfully")
 		defer consumerGroup.Close()
 
+		errorId = "" // reset error id
 		errConsumer := cg.consumerMessage(ctx, consumerGroup, handler)
 		if errConsumer != nil {
 			cg.writeLog(errorId, errConsumer)

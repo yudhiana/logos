@@ -189,7 +189,7 @@ func (cg *ConsumerGroup) updateLog(errorId string, attempt int) {
 	re := cg.RecordError
 	if re.Active {
 		if errorId != "" && attempt > 0 {
-			if _, errLog := re.UpdateLog(re.DB, re.Collection, attempt, errorId); errLog != nil {
+			if _, errLog := re.UpdateLog(re.DB, re.Collection, errorId, attempt); errLog != nil {
 				logging.NewLogger().Error("failed to update log", "error", errLog)
 			}
 		}

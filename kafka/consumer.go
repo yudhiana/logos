@@ -20,6 +20,7 @@ type RecordError struct {
 	DB         *mongo.Database
 	Collection string
 	WriteLog   WriteLog
+	UpdateLog  WriteLog
 }
 
 type ConsumerGroup struct {
@@ -96,6 +97,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		logging.NewLogger().Info("connected to Kafka successfully")
 		defer consumerGroup.Close()
 
+		cg.updateLog(errorId, attempt)
 		errorId = "" // reset error id
 		errConsumer := cg.consumerMessage(ctx, consumerGroup, handler)
 		if errConsumer != nil {
@@ -182,6 +184,18 @@ func (cg *ConsumerGroup) writeLog(errorId string, errMsg error) {
 		}
 	}
 }
+
+func (cg *ConsumerGroup) updateLog(errorId string, count int) {
+	re := cg.RecordError
+	if re.Active {
+		if errorId != "" {
+			if _, errLog := re.UpdateLog(re.DB, re.Collection, count, errorId); errLog != nil {
+				logging.NewLogger().Error("failed to update log", "error", errLog)
+			}
+		}
+	}
+}
+
 func (cg *ConsumerGroup) GetLatestRetryCount() int {
 	return cg.latestRetryCount
 }

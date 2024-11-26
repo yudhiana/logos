@@ -185,11 +185,11 @@ func (cg *ConsumerGroup) writeLog(errorId string, errMsg error) {
 	}
 }
 
-func (cg *ConsumerGroup) updateLog(errorId string, count int) {
+func (cg *ConsumerGroup) updateLog(errorId string, attempt int) {
 	re := cg.RecordError
 	if re.Active {
-		if errorId != "" {
-			if _, errLog := re.UpdateLog(re.DB, re.Collection, count, errorId); errLog != nil {
+		if errorId != "" && attempt > 0 {
+			if _, errLog := re.UpdateLog(re.DB, re.Collection, attempt, errorId); errLog != nil {
 				logging.NewLogger().Error("failed to update log", "error", errLog)
 			}
 		}

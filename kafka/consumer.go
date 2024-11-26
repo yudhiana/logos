@@ -101,8 +101,10 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 		errorId = "" // reset error id
 		errConsumer := cg.consumerMessage(ctx, consumerGroup, handler)
 		if errConsumer != nil {
-			cg.writeLog(errorId, errConsumer)
-			errorId = cg.GetErrorId()
+			if errConsumer != context.Canceled {
+				cg.writeLog(errorId, errConsumer)
+				errorId = cg.GetErrorId()
+			}
 		}
 
 		if ctx.Err() == context.Canceled {

@@ -152,7 +152,7 @@ func (cg *ConsumerGroup) consumerMessage(ctx context.Context, client sarama.Cons
 	for {
 		select {
 		case <-ctx.Done():
-			logging.NewLogger().Info("shutting down by context", "operation", "kafka-consumer-disconnect")
+			logging.NewLogger().Warn("shutting down by context", "operation", "kafka-consumer-disconnect")
 			if err := client.Close(); err != nil {
 				logging.NewLogger().Error("failed to close kafka consumer", "error", err)
 			}

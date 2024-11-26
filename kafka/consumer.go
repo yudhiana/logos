@@ -86,7 +86,7 @@ func NewKafkaConsumerGroup(cg *ConsumerGroup, handler Handler) {
 			// exponential backoff for retries
 			sleepDuration := retryInterval * time.Duration(attempt) * time.Duration(backoffFactor)
 			if errSleepCtx := ward.SleepWithContext(ctx, sleepDuration); errSleepCtx != nil {
-				logging.NewLogger().Error("failed to sleep", "error", errSleepCtx)
+				logging.NewLogger().Warn("cancelled to sleep", "action", errSleepCtx)
 				return
 			}
 

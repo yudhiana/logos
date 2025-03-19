@@ -42,15 +42,20 @@ func NewKafkaProducer(pg *ProducerGroup) *ProducerGroup {
 // PublishMessages encodes the provided message and sends it to Kafka asynchronously.
 // The message is encoded using the encodeMessage method and then passed to produceMessages
 // to be published to the specified Kafka topic.
-func (pg *ProducerGroup) PublishMessages(topic string, message any) {
+func (pg *ProducerGroup) PublishMessages(topic string, key, message any) {
 	if message != nil && kafkaAsyncProducer != nil {
 		value := pg.encodeMessage(message)
-		go pg.produceMessages(topic, value)
+		key := pg.encodeMessage(topic)
+		go pg.produceMessages(topic, key, value)
 	}
 }
 
 // Helper method to encode the message into sarama.Encoder
 func (pg *ProducerGroup) encodeMessage(message any) sarama.Encoder {
+	if message == nil {
+		return nil
+	}
+
 	switch msg := message.(type) {
 	case string:
 		return sarama.StringEncoder(msg)
@@ -120,11 +125,11 @@ func (pg *ProducerGroup) startSuccessErrorHandler() {
 
 // produceMessages sends the provided encoded message to the first Kafka topic in the ProducerGroup.
 // The message is sent asynchronously, and its success or failure is handled by the startSuccessErrorHandler.
-func (pg *ProducerGroup) produceMessages(topic string, value sarama.Encoder) {
+func (pg *ProducerGroup) produceMessages(topic string, key, value sarama.Encoder) {
 	message := &sarama.ProducerMessage{
 		Topic: topic,
 		Value: value,
-		Key:   nil,
+		Key:   key,
 	}
 
 	// Send message to Kafka; success/error will be handled in startSuccessErrorHandler

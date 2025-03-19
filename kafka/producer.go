@@ -45,7 +45,7 @@ func NewKafkaProducer(pg *ProducerGroup) *ProducerGroup {
 func (pg *ProducerGroup) PublishMessages(topic string, key, message any) {
 	if message != nil && kafkaAsyncProducer != nil {
 		value := pg.encodeMessage(message)
-		key := pg.encodeMessage(topic)
+		key := pg.encodeMessage(key)
 		logging.NewLogger().Info("message", "key", key, "value", value)
 		go pg.produceMessages(topic, key, value)
 	}

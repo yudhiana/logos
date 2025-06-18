@@ -98,7 +98,6 @@ func (s *Sanitizer) sanitize(ctx context.Context, value any, depth int) any {
 					v[k] = s.sanitize(ctx, val, depth+1)
 				}
 			} else {
-
 				v[k] = s.sanitize(ctx, val, depth+1)
 			}
 		}
@@ -136,9 +135,7 @@ func (s *Sanitizer) sanitize(ctx context.Context, value any, depth int) any {
 				v[i] = s.sanitize(ctx, v[i], depth)
 			}
 			return v
-
 		}
-
 	}
 	return value
 }

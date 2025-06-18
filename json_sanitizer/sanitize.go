@@ -125,6 +125,7 @@ func (s *Sanitizer) sanitize(ctx context.Context, value any, depth int) any {
 
 				v[i] = s.sanitize(ctx, v[i], depth).(map[string]any)
 			}
+			return v
 		case reflect.Interface:
 			v := value.([]any)
 			for i := range v {

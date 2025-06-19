@@ -2,6 +2,7 @@ package jsonSanitizer
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"reflect"
 	"strconv"
@@ -27,6 +28,16 @@ func getIntEnv(env string) int {
 		return DefaultMaxDepth
 	}
 	return result
+}
+
+func IsJSON(value string) bool {
+	var js json.RawMessage
+	return json.Unmarshal([]byte(value), &js) == nil
+}
+
+func toJSON(value string) (result map[string]any) {
+	_ = json.Unmarshal([]byte(value), &result)
+	return
 }
 
 func getSensitiveFields() (result map[string]bool) {
@@ -57,12 +68,15 @@ func (s *Sanitizer) Sanitize(value any) any {
 	start := time.Now()
 	result := s.sanitize(ctx, value, 0)
 
-	if time.Since(start) > DefaultSanitizeDuration {
+	switch {
+	case time.Since(start) > DefaultSanitizeDuration:
 		logging.NewLogger().Warn("JSON sanitization took too long time", "duration_in_seconds", time.Since(start).Seconds())
+		// default:
+		// 	logging.NewLogger().Info("JSON sanitized", "duration_in_seconds", time.Since(start).Seconds())
 	}
 
 	if ctx.Err() != nil {
-		logging.NewLogger().Warn("JSON sanitization failed", "error", ctx.Err())
+		logging.NewLogger().Warn("JSON sanitization cancelled by context", "error", ctx.Err())
 		return value
 	}
 
@@ -71,8 +85,10 @@ func (s *Sanitizer) Sanitize(value any) any {
 
 // Sanitize recursively cleans the input JSON-like structure
 func (s *Sanitizer) sanitize(ctx context.Context, value any, depth int) any {
-	if ctx.Err() != nil {
+	select {
+	case <-ctx.Done():
 		return value
+	default:
 	}
 
 	if depth > s.MaxDepth {
@@ -80,8 +96,10 @@ func (s *Sanitizer) sanitize(ctx context.Context, value any, depth int) any {
 	}
 
 	switch reflect.TypeOf(value).Kind() {
-	// case reflect.String:
-	// return s.RedactionMarker
+	case reflect.String:
+		if IsJSON(value.(string)) {
+			return s.sanitize(ctx, toJSON(value.(string)), depth+1)
+		}
 
 	case reflect.Map:
 		v := value.(map[string]any)
@@ -137,6 +155,7 @@ func (s *Sanitizer) sanitize(ctx context.Context, value any, depth int) any {
 			}
 			return v
 		}
+
 	}
 	return value
 }

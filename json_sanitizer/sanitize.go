@@ -71,7 +71,7 @@ func (s *Sanitizer) Sanitize(value any) any {
 	switch {
 	case time.Since(start) > DefaultSanitizeDuration:
 		logging.NewLogger().Warn("JSON sanitization took too long time", "duration_in_seconds", time.Since(start).Seconds())
-		// default:
+	default:
 		// 	logging.NewLogger().Info("JSON sanitized", "duration_in_seconds", time.Since(start).Seconds())
 	}
 

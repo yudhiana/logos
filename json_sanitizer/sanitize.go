@@ -85,6 +85,10 @@ func (s *Sanitizer) Sanitize(value any) any {
 
 // Sanitize recursively cleans the input JSON-like structure
 func (s *Sanitizer) sanitize(ctx context.Context, value any, depth int) any {
+	if value == nil {
+		return value
+	}
+
 	select {
 	case <-ctx.Done():
 		return value

@@ -25,9 +25,16 @@ type Sanitizer struct {
 func getIntEnv(env string) int {
 	result, err := strconv.Atoi(os.Getenv(env))
 	if err != nil {
-		return DefaultMaxDepth
+		return 0
 	}
 	return result
+}
+
+func getMaxDepthJSON(env string) int {
+	if depth := getIntEnv(env); depth > 0 {
+		return depth
+	}
+	return DefaultMaxDepth
 }
 
 func IsJSON(value string) bool {
@@ -53,7 +60,7 @@ func getSensitiveFields() (result map[string]bool) {
 
 func NewJsonSanitizer() *Sanitizer {
 	return &Sanitizer{
-		MaxDepth:        getIntEnv("JSON_SANITIZER_MAX_DEPTH"),
+		MaxDepth:        getMaxDepthJSON("JSON_SANITIZER_MAX_DEPTH"),
 		RedactionMarker: DefaultRedactionMarker,
 		SensitiveFields: getSensitiveFields(),
 		Policy:          bluemonday.StrictPolicy(),

@@ -1,7 +1,6 @@
 module github.com/mataharibiz/ward
 
 go 1.23
-toolchain go1.24.1
 
 require (
 	github.com/IBM/sarama v1.43.3

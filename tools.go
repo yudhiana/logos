@@ -1,13 +1,10 @@
-package ward
+package main
 
 import (
-	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"runtime"
 	"strings"
-	"time"
 )
 
 func GetEnv(key string, fallback string) string {
@@ -18,22 +15,6 @@ func GetEnv(key string, fallback string) string {
 	}
 
 	return env
-}
-
-// ParsePayloadData parse payload data to out struct
-func ParsePayloadData(payloadData map[string]interface{}, out interface{}) error {
-
-	// if payload hava 'data' key
-	if val, ok := payloadData["data"]; ok {
-		payloadData = val.(map[string]interface{})
-	}
-
-	jsonRaw, err := json.Marshal(payloadData)
-	if err != nil {
-		return err
-	}
-
-	return json.Unmarshal(jsonRaw, out)
 }
 
 func GetStackTrace() (stacktrace string) {
@@ -51,13 +32,4 @@ func GetStackTrace() (stacktrace string) {
 	}
 
 	return fmt.Sprintf("\n:stacktrace:\n%s", stacktrace)
-}
-
-func SleepWithContext(ctx context.Context, d time.Duration) error {
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-time.After(d):
-		return nil
-	}
 }

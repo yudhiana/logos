@@ -23,13 +23,13 @@ NOTE :
 ### 2. Usage
 ```go
 import (
-	"github.com/yudhiana/ward/logging"
+	"github.com/yudhiana/logos"
 )
 
 
 func main() {
-	logging.NewLogger().Debug("debug message")
-	logging.NewLogger().Info("service started", "version", "1.0.0")
-	logging.NewLogger().Warn("retrying connection", "attempt", 3)
-	logging.NewLogger().Error("failed to insert", "err", "db timeout")
+	logos.NewLogger().Debug("debug message")
+	logos.NewLogger().Info("service started", "version", "1.0.0")
+	logos.NewLogger().Warn("retrying connection", "attempt", 3)
+	logos.NewLogger().Error("failed to insert", "err", "db timeout")
 }

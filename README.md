@@ -1,14 +1,8 @@
-# 🛡️ Ward
-
-`ward` is a shared utility library for the Mbizmarket ecosystem.
-It provides a **standardized foundation** for:
+# 🧾 LOGOS
 
 - 📜 **Structured Logging** (`slog`) with environment-based levels
-- 🧹 **JSON Sanitizer** for safe logging & payload storage
 
 ---
-
-## 🚀 Features
 
 ### 1. Logging (Go `slog`)
 - Standard log levels based on **RFC 5424** (`DEBUG < INFO < WARN < ERROR`).

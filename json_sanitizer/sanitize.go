@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mataharibiz/ward/logging"
+	"github.com/yudhiana/ward/logging"
 	"github.com/microcosm-cc/bluemonday"
 )
 

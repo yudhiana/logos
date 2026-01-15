@@ -4,7 +4,6 @@
 It provides a **standardized foundation** for:
 
 - 📜 **Structured Logging** (`slog`) with environment-based levels
-- 📡 **Queue Connections** (Kafka, RabbitMQ)
 - 🧹 **JSON Sanitizer** for safe logging & payload storage
 
 ---
@@ -24,7 +23,7 @@ NOTE :
 ### 2. Usage
 ```go
 import (
-	"github.com/mataharibiz/ward/logging"
+	"github.com/yudhiana/ward/logging"
 )
 
 
